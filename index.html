@@ -215,11 +215,30 @@
   .button-group .save-btn {
     margin: 0;
   }
+
+  .guide-text {
+  text-align: center;
+  font-size: 14px;
+  color: #444;
+  background: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin: 0 auto 15px auto;
+  max-width: 480px;
+  line-height: 1.6;
+}
+  
 </style>
 </head>
 <body>
   <h1>RE:BORN 기록지 🏀</h1>
 
+  <p class="guide-text">
+  ⚠️ 이 페이지는 서버와 연결되지 않습니다.<br>
+  기록은 <strong>현재 브라우저에만 저장</strong>되며, 다른 기기에서는 불러올 수 없습니다.
+</p>
+  
   <div class="tabs">
     <button class="tab-btn active" onclick="showTab('teamTab', this)">팀 / 선수정보</button>
     <button class="tab-btn" onclick="showTab('gameTab', this)">경기 기록</button>
@@ -466,3 +485,4 @@ function resetStats() {
 </script>
 </body>
 </html>
+
