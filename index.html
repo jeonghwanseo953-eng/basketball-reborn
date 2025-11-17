@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>리본 농구 기록 시스템</title>
+<title>RE:BORN 3팀 농구 기록 시스템</title>
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Noto+Sans+KR:wght@400;500;700&display=swap');
 
@@ -23,7 +24,7 @@
     margin-bottom: 20px;
   }
 
-  /* 탭 스타일 */
+  /* 탭 메뉴 */
   .tabs {
     display: flex;
     justify-content: center;
@@ -60,27 +61,32 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* ✅ 반응형 팀 컨테이너 */
+  /* 3팀 UI 개선한 팀 카드 */
   .team-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     padding: 10px;
     box-sizing: border-box;
   }
 
-  .team-container .team {
+  @media (max-width: 900px) {
+    .team-container {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 650px) {
+    .team-container {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .team {
     background-color: #ffffff;
     border-radius: 12px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     padding: 15px;
-  }
-
-  /* 🔽 모바일 화면일 때 1열 */
-  @media (max-width: 700px) {
-    .team-container {
-      grid-template-columns: 1fr;
-    }
   }
 
   .team h2 {
@@ -91,8 +97,9 @@
     color: white;
   }
 
-  .white h2 { background-color: #adb5bd; }
-  .black h2 { background-color: #343a40; }
+  .레드 h2 { background-color: #d62828; }
+  .화이트 h2 { background-color: #adb5bd; }
+  .블랙 h2 { background-color: #343a40; }
 
   ul { list-style: none; padding: 0; margin: 0; }
   li {
@@ -144,29 +151,8 @@
 
   .plus { background-color: #28a745; color: #fff; }
   .minus { background-color: #dc3545; color: #fff; }
-  .plus:hover, .minus:hover { opacity: 0.9; }
   .plus3 { background-color: #007bff !important; color: #fff !important; }
-
-  select {
-    font-size: 15px;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    margin: 10px auto;
-  }
-
-  /* 저장 버튼 */
-  .save-btn {
-    display: block;
-    margin: 10px auto;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    padding: 10px 20px;
-    cursor: pointer;
-  }
+  .plus:hover, .minus:hover { opacity: 0.9; }
 
   /* 스코어보드 */
   .scoreboard {
@@ -182,9 +168,9 @@
   }
 
   .scoreboard h3 { margin: 0; font-size: 1.1em; }
-  .scoreboard .score { font-size: 1.4em; font-weight: 700; color: #007bff; }
+  .score { font-size: 1.4em; font-weight: 700; color: #007bff; }
 
-  /* 경기 기록 레이아웃 */
+  /* 경기 화면 레이아웃 */
   #matchArea {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -192,15 +178,11 @@
     margin-bottom: 20px;
   }
 
-  /* 모바일에서 1열 */
   @media (max-width: 700px) {
     #matchArea {
       grid-template-columns: 1fr;
     }
   }
-
-  #matchArea table { font-size: 12px; }
-  #matchArea th, #matchArea td { padding: 4px; }
 
   .button-group {
     display: flex;
@@ -212,109 +194,132 @@
     flex-wrap: wrap;
   }
 
-  .button-group .save-btn {
-    margin: 0;
+  .save-btn {
+    display: block;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    padding: 10px 20px;
+    cursor: pointer;
   }
 
   .guide-text {
-  text-align: center;
-  font-size: 14px;
-  color: #444;
-  background: #fff3cd;
-  border: 1px solid #ffeeba;
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin: 0 auto 15px auto;
-  max-width: 480px;
-  line-height: 1.6;
-}
-  
+    text-align: center;
+    font-size: 14px;
+    color: #444;
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 0 auto 15px auto;
+    max-width: 480px;
+    line-height: 1.6;
+  }
+
 </style>
 </head>
 <body>
-  <h1>RE:BORN 기록지 🏀</h1>
+
+<h1>RE:BORN 농구 기록지 🏀</h1>
 
 <p class="guide-text">
-  📱 태블릿 사용을 권장합니다.<br>
-  ⚠️ 기록은 <strong>현재 기기</strong>에만 저장되며 서버와는 연결되지 않습니다.<br>
-  💾 <strong>경기 종료 후</strong> 하단의 <strong>CSV 저장</strong> 버튼을 눌러 기록을 보관하세요.
+  📱 태블릿 사용 권장<br>
+  ⚠️ 기록은 <strong>현재 기기</strong>에만 저장됩니다<br>
+  💾 경기 종료 후 <strong>CSV 저장</strong>을 눌러 기록을 보관하세요
 </p>
 
-  
-  <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('teamTab', this)">팀 / 선수정보</button>
-    <button class="tab-btn" onclick="showTab('gameTab', this)">경기 기록</button>
-  </div>
+<!-- 탭 -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('teamTab', this)">팀 / 선수정보</button>
+  <button class="tab-btn" onclick="showTab('gameTab', this)">경기 기록</button>
+</div>
 
-  <!-- 팀 / 선수정보 -->
-  <div id="teamTab" class="tab-content active">
-    <div class="team-container">
-      <div class="team white">
-        <h2>화이트 팀</h2>
-        <ul>
-          <li>곽호승</li>
-          <li>김창수</li>
-          <li>서윤서</li>
-          <li>서정환</li>
-          <li>오민형</li>
-          <li>임문규</li>
-          <li>한경원</li>
-        </ul>
-      </div>
-      <div class="team black">
-        <h2>블랙 팀</h2>
-        <ul>
-          <li>강인구</li>
-          <li>권용</li>
-          <li>서민균</li>
-          <li>유채훈</li>
-          <li>전성훈</li>
-          <li>정지학</li>
-          <li>홍통치</li>
-          <li>황지환</li>
-        </ul>
-      </div>
+<!-- ===========================
+     3팀 팀 / 선수 정보
+=========================== -->
+<div id="teamTab" class="tab-content active">
+  <div class="team-container">
+    <div class="team 레드">
+      <h2>레드 팀</h2>
+      <ul>
+        <li>한경원</li><li>김창수</li><li>오민형</li>
+        <li>임문규</li><li>서정환</li><li>김성호</li>
+      </ul>
+    </div>
+
+    <div class="team 화이트">
+      <h2>화이트 팀</h2>
+      <ul>
+        <li>한을</li><li>홍통치</li><li>황지환</li>
+        <li>권용</li><li>서윤서</li>
+      </ul>
+    </div>
+
+    <div class="team 블랙">
+      <h2>블랙 팀</h2>
+      <ul>
+        <li>강인구</li><li>강지문</li><li>전성훈</li>
+        <li>서민균</li><li>유채훈</li><li>허필은</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===========================
+     경기 기록 탭
+=========================== -->
+<div id="gameTab" class="tab-content">
+  <center>
+    <select id="matchSelect" onchange="loadMatch()">
+      <option value="">-- 경기를 선택하세요 --</option>
+      <option value="game1">레드 vs 화이트</option>
+      <option value="game2">화이트 vs 블랙</option>
+      <option value="game3">블랙 vs 레드</option>
+    </select>
+  </center>
+
+  <div class="scoreboard" id="scoreboard" style="display:none;">
+    <div>
+      <h3 id="teamA_name">TEAM A</h3>
+      <div class="score" id="teamA_score">0</div>
+    </div>
+    <div><h3>VS</h3></div>
+    <div>
+      <h3 id="teamB_name">TEAM B</h3>
+      <div class="score" id="teamB_score">0</div>
     </div>
   </div>
 
-  <!-- 경기 기록 -->
-  <div id="gameTab" class="tab-content">
-    <center>
-      <select id="matchSelect" onchange="loadMatch()">
-        <option value="">-- 경기를 선택하세요 --</option>
-        <option value="game1">블랙 vs 화이트 (1경기)</option>
-        <option value="game2">블랙 vs 화이트 (2경기)</option>
-        <option value="game3">블랙 vs 화이트 (3경기)</option>
-      </select>
-    </center>
+  <div id="matchArea"></div>
 
-    <div class="scoreboard" id="scoreboard" style="display:none;">
-      <div><h3 id="teamA_name">TEAM A</h3><div class="score" id="teamA_score">0</div></div>
-      <div><h3>VS</h3></div>
-      <div><h3 id="teamB_name">TEAM B</h3><div class="score" id="teamB_score">0</div></div>
-    </div>
-
-    <div id="matchArea"></div>
-    <div class="button-group">
-      <button class="save-btn" onclick="exportCSV()">📤 기록 저장 (CSV)</button>
-      <button class="save-btn" style="background:#dc3545;" onclick="resetStats()">🗑️ 기록 초기화</button>
-    </div>
+  <div class="button-group">
+    <button class="save-btn" onclick="exportCSV()">📤 CSV 저장</button>
+    <button class="save-btn" style="background:#dc3545;" onclick="resetStats()">🗑 초기화</button>
   </div>
+</div>
 
 <script>
+/* ======================
+   3팀 구성
+====================== */
 const teams = {
-  화이트: ["곽호승","김창수","서윤서","서정환","오민형","임문규","한경원"],
-  블랙: ["강인구","권용","서민균","유채훈","전성훈","정지학","홍통치","황지환"]
+  레드: ["한경원","김창수","오민형","임문규","서정환","김성호"],
+  화이트: ["한을","홍통치","황지환","권용","서윤서"],
+  블랙: ["강인구","강지문","전성훈","서민균","유채훈","허필은"]
 };
 
+/* 경기 매치업 */
 const matchups = {
-  game1: ["블랙","화이트"],
-  game2: ["블랙","화이트"],
-  game3: ["블랙","화이트"]
+  game1: ["레드","화이트"],
+  game2: ["화이트","블랙"],
+  game3: ["블랙","레드"]
 };
 
 let currentMatch = "";
 
+/* 탭 전환 */
 function showTab(id, btn) {
   document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
@@ -327,42 +332,43 @@ window.onload = () => {
   select.selectedIndex = 1;
   currentMatch = select.value;
   loadMatch();
-  if (localStorage.getItem("showGameTabAfterReload") === "true") {
-    localStorage.removeItem("showGameTabAfterReload");
-    document.querySelector(".tab-btn[onclick*='gameTab']").click();
-  }
 };
 
+/* 경기 로드 */
 function loadMatch() {
   currentMatch = document.getElementById("matchSelect").value;
   const area = document.getElementById("matchArea");
   const board = document.getElementById("scoreboard");
   area.innerHTML = "";
+
   if (!currentMatch) { board.style.display = "none"; return; }
 
   const [teamA, teamB] = matchups[currentMatch];
-  document.getElementById("teamA_name").textContent = teamA.toUpperCase();
-  document.getElementById("teamB_name").textContent = teamB.toUpperCase();
+  document.getElementById("teamA_name").textContent = teamA;
+  document.getElementById("teamB_name").textContent = teamB;
   board.style.display = "flex";
+
   area.appendChild(createTeamTable(teamA));
   area.appendChild(createTeamTable(teamB));
+
   loadStats();
   updateScores();
 }
 
+/* 팀 테이블 생성 */
 function createTeamTable(teamKey) {
   const teamDiv = document.createElement("div");
   teamDiv.className = "team " + teamKey;
 
   const table = document.createElement("table");
   const header = table.insertRow();
-  ["선수","득점","리바","어시","스틸","블록","턴오버","파울"].forEach(h => {
-    const th = document.createElement("th"); th.textContent = h; header.appendChild(th);
-  });
+  ["선수","득점","리바","어시","스틸","블록","턴오버","파울"]
+  .forEach(h => { const th = document.createElement("th"); th.textContent = h; header.appendChild(th); });
 
   teams[teamKey].forEach(name => {
     const row = table.insertRow();
     const nameCell = row.insertCell(); nameCell.textContent = name;
+
     for (let i = 0; i < 7; i++) {
       const cell = row.insertCell();
       const span = document.createElement("span");
@@ -370,6 +376,7 @@ function createTeamTable(teamKey) {
       span.id = `${currentMatch}_${teamKey}_${name}_${i}`;
       cell.appendChild(span);
       cell.appendChild(document.createElement("br"));
+
       if (i === 0) {
         cell.appendChild(makeBtn("+2", () => changeStat(span, 2, teamKey)));
         cell.appendChild(makeBtn("+3", () => changeStat(span, 3, teamKey)));
@@ -380,6 +387,7 @@ function createTeamTable(teamKey) {
       }
     }
   });
+
   teamDiv.appendChild(table);
   return teamDiv;
 }
@@ -393,7 +401,7 @@ function makeBtn(text, fn) {
   return b;
 }
 
-function changeStat(el, val, teamKey) {
+function changeStat(el, val) {
   let num = parseInt(el.textContent);
   num = Math.max(0, num + val);
   el.textContent = num;
@@ -401,9 +409,11 @@ function changeStat(el, val, teamKey) {
   updateScores();
 }
 
+/* 저장 */
 function saveStats() {
   if (!currentMatch) return;
   let existing = JSON.parse(localStorage.getItem("reborn_stats") || "{}");
+
   Object.keys(teams).forEach(team => {
     teams[team].forEach(player => {
       for (let i = 0; i < 7; i++) {
@@ -412,9 +422,11 @@ function saveStats() {
       }
     });
   });
+
   localStorage.setItem("reborn_stats", JSON.stringify(existing));
 }
 
+/* 로드 */
 function loadStats() {
   const saved = JSON.parse(localStorage.getItem("reborn_stats") || "{}");
   Object.keys(saved).forEach(id => {
@@ -424,14 +436,15 @@ function loadStats() {
   updateScores();
 }
 
+/* 점수 계산 */
 function updateScores() {
   if (!currentMatch) return;
   const [teamA, teamB] = matchups[currentMatch];
-  document.getElementById("teamA_score").textContent = sumTeamPoints(teamA);
-  document.getElementById("teamB_score").textContent = sumTeamPoints(teamB);
+  document.getElementById("teamA_score").textContent = sumPoints(teamA);
+  document.getElementById("teamB_score").textContent = sumPoints(teamB);
 }
 
-function sumTeamPoints(teamKey) {
+function sumPoints(teamKey) {
   let total = 0;
   teams[teamKey].forEach(name => {
     const el = document.getElementById(`${currentMatch}_${teamKey}_${name}_0`);
@@ -440,19 +453,14 @@ function sumTeamPoints(teamKey) {
   return total;
 }
 
+/* CSV 저장 */
 function exportCSV() {
   let saved = JSON.parse(localStorage.getItem("reborn_stats") || "{}");
-  if (Object.keys(saved).length === 0) return alert("⚠️ 저장된 기록이 없습니다!");
+  if (Object.keys(saved).length === 0) return alert("⚠ 저장된 기록이 없습니다!");
 
   let csv = "경기,팀,선수,득점,리바운드,어시스트,스틸,블록,턴오버,파울\n";
-  const matchNames = {
-    game1: "블랙 vs 화이트 (1경기)",
-    game2: "블랙 vs 화이트 (2경기)",
-    game3: "블랙 vs 화이트 (3경기)"
-  };
 
   Object.keys(matchups).forEach(matchKey => {
-    const matchTitle = matchNames[matchKey] || matchKey;
     const [teamA, teamB] = matchups[matchKey];
     [teamA, teamB].forEach(teamKey => {
       teams[teamKey].forEach(name => {
@@ -461,7 +469,7 @@ function exportCSV() {
           const id = `${matchKey}_${teamKey}_${name}_${i}`;
           stats.push(saved[id] || "0");
         }
-        csv += `${matchTitle},${teamKey},${name},${stats.join(",")}\n`;
+        csv += `${matchKey},${teamKey},${name},${stats.join(",")}\n`;
       });
     });
     csv += "\n";
@@ -471,21 +479,18 @@ function exportCSV() {
   const blob = new Blob([BOM + csv], { type: "text/csv;charset=utf-8;" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "리본_기록_전체.csv";
+  a.download = "REBORN_3팀_기록.csv";
   a.click();
 }
 
-
+/* 초기화 */
 function resetStats() {
-  if (!confirm("⚠️ 모든 경기의 저장된 기록을 완전히 삭제합니다. 계속하시겠습니까?")) return;
+  if (!confirm("모든 기록을 삭제합니다. 계속할까요?")) return;
   localStorage.removeItem("reborn_stats");
-  alert("✅ 모든 기록이 초기화되었습니다!");
-  localStorage.setItem("showGameTabAfterReload", "true");
+  alert("초기화 완료!");
   location.reload();
 }
 </script>
+
 </body>
 </html>
-
-
-
