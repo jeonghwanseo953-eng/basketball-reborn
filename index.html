@@ -228,6 +228,17 @@
     line-height: 1.6;
   }
 
+  .guest-badge {
+  display: inline-block;
+  background-color: #0d6efd;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 6px;
+  font-weight: 600;
+}
+  
 </style>
 </head>
 <body>
@@ -274,8 +285,17 @@
     <div class="team 블랙">
       <h2>블랙 팀</h2>
       <ul>
-        <li>강인구</li><li>강지문</li><li>전성훈</li>
-        <li>서민균</li><li>유채훈</li><li>허필은</li>
+        <li>강지문</li><li>전성훈</li>
+        <li>서민균</li><li>유채훈</li>
+            <li>
+      허필은
+      <span class="guest-badge">게스트</span>
+    </li>
+
+    <li>
+      이호제
+      <span class="guest-badge">게스트</span>
+    </li>
       </ul>
     </div>
   </div>
@@ -319,9 +339,9 @@
    3팀 구성
 ====================== */
 const teams = {
-  레드: ["한경원","김창수","오민형","임문규","서정환","김성호"],
-  화이트: ["한을","홍통치","황지환","권용","서윤서"],
-  블랙: ["강인구","강지문","전성훈","서민균","유채훈","허필은"]
+  레드: ["한경원", "김창수", "오민형", "임문규", "서정환", "김성호"],
+  화이트: ["한을", "홍통치", "황지환", "권용", "서윤서"],
+  블랙: ["강지문", "전성훈", "서민균", "유채훈", "허필은", "이호제"]
 };
 
 /* 경기 매치업 */
@@ -508,5 +528,6 @@ function resetStats() {
 
 </body>
 </html>
+
 
 
