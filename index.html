@@ -11,159 +11,165 @@
   body {
     font-family: 'Noto Sans KR', sans-serif;
     background: #f9fafb;
-    margin: 0;
-    padding: 15px;
     color: #222;
+    margin: 0;
+    padding: 20px;
   }
 
   h1 {
     text-align: center;
     font-family: 'Orbitron', sans-serif;
+    color: #222;
     font-size: 2em;
     margin-bottom: 25px;
   }
 
+  /* 탭 메뉴 */
   .tabs {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 8px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
   }
 
   .tab-btn {
-    padding: 12px 24px;
-    border-radius: 10px;
-    border: none;
-    background: #e9ecef;
-    font-size: 16px;
-    font-weight: 700;
+    padding: 10px 20px;
     cursor: pointer;
+    background-color: #e9ecef;
+    border: none;
+    border-radius: 8px;
+    color: #555;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    font-size: 16px;
   }
 
   .tab-btn.active {
-    background: #007bff;
+    background-color: #007bff;
     color: white;
   }
 
+  .tab-content { display: none; }
+  .tab-content.active {
+    display: block;
+  }
+
+  /* 팀 박스 */
   .team-container {
     display: grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    padding: 12px;
   }
 
   .team {
-    background: #fff;
-    padding: 18px;
-    border-radius: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   }
 
   .team h2 {
     text-align: center;
     padding: 10px 0;
-    font-size: 1.4em;
-    color: #fff;
     border-radius: 8px;
-    margin-bottom: 10px;
+    font-size: 1.3em;
+    color: white;
   }
 
-  .레드 h2 { background:#d62828; }
-  .화이트 h2 { background:#adb5bd; }
-  .블랙 h2 { background:#343a40; }
+  .레드 h2 { background: #d62828; }
+  .화이트 h2 { background: #adb5bd; }
+  .블랙 h2 { background: #343a40; }
 
+  ul { list-style: none; padding: 0; margin: 0; }
   li {
-    list-style:none;
-    background:#f1f3f5;
-    margin:6px 0;
-    padding:8px 12px;
-    border-radius:8px;
-    font-size:1.1em;
-    font-weight:600;
+    background: #f1f3f5;
+    margin: 6px 0;
+    padding: 10px;
+    font-size: 1.05em;
+    border-radius: 6px;
+    font-weight: 600;
   }
 
-  /* ======= 테이블 ======= */
+  /* 테이블 */
   table {
-    width:100%;
-    border-collapse:collapse;
-    background:#fff;
-    border-radius:12px;
-    font-size:16px;
-    overflow:hidden;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    font-size: 15px;
   }
 
   th, td {
-    padding:10px;
-    text-align:center;
-    border-bottom:1px solid #dee2e6;
-    font-size:1.05em;
+    text-align: center;
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
   }
 
   th {
-    background:#e9ecef;
-    font-size:1.1em;
-    font-weight:700;
-  }
-
-  td.player-name {
-    font-weight:800;
-    font-size:17px;
+    background: #e9ecef;
+    font-size: 1em;
+    font-weight: 700;
   }
 
   td span {
-    font-size:16px;
-    font-weight:700;
+    font-size: 1.15em;
+    font-weight: 700;
   }
 
-  /* 버튼 크기 증가 */
-  .plus, .minus {
-    border:none;
-    border-radius:8px;
-    padding:8px 14px;
-    margin:3px;
-    font-size:14px;
-    font-weight:700;
-    cursor:pointer;
+  /* 버튼 */
+  button.plus, button.minus {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 3px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
   }
 
-  .plus { background:#28a745; color:#fff; }
-  .minus { background:#dc3545; color:#fff; }
-  .plus3 { background:#007bff !important; }
+  .plus { background: #28a745; color: white; }
+  .minus { background: #dc3545; color: white; }
+  .plus3 { background: #007bff !important; }
 
-  /* 경기 레이아웃 */
+  /* 경기 */
   #matchArea {
-    margin-top:20px;
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
   }
 
   .scoreboard {
-    display:flex;
+    margin: 20px 0;
+    display: flex;
     justify-content: space-around;
-    align-items:center;
-    background:#fff;
-    padding:15px;
-    border-radius:12px;
-    margin-top:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 1.2em;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   }
 
-  .score {
-    font-size:2em;
-    font-weight:800;
-    color:#007bff;
+  .button-group {
+    text-align: center;
+    margin: 30px 0;
   }
 
   .save-btn {
-    padding:12px 20px;
-    border-radius:10px;
-    background:#007bff;
-    color:#fff;
-    border:none;
-    font-weight:800;
-    cursor:pointer;
-    font-size:16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    margin: 5px;
+    cursor: pointer;
+    font-weight: 700;
   }
 </style>
 </head>
@@ -171,193 +177,176 @@
 
 <h1>RE:BORN 농구 기록지 🏀</h1>
 
-<p style="text-align:center; font-size:15px; color:#555; margin-top:-10px;">
-  📅 2025년 11월 25일 경기 기록
-</p>
-
+<!-- 탭 -->
 <div class="tabs">
-  <button class="tab-btn active" onclick="showTab('teamTab', this)">팀 / 선수정보</button>
+  <button class="tab-btn active" onclick="showTab('teamTab', this)">팀 정보</button>
   <button class="tab-btn" onclick="showTab('gameTab', this)">경기 기록</button>
 </div>
 
-<!-- 팀 정보 -->
+<!-- 팀 탭 -->
 <div id="teamTab" class="tab-content active">
   <div class="team-container">
 
-    <!-- 레드 -->
     <div class="team 레드">
       <h2>레드 팀</h2>
       <ul>
-        <li>김성호</li>
-        <li>김창수</li>
-        <li>서정환</li>
-        <li>오민형</li>
-        <li>임문규</li>
-        <li>한경원</li>
+        <li>김성호</li><li>김창수</li><li>서정환</li>
+        <li>오민형</li><li>임문규</li><li>한경원</li>
       </ul>
     </div>
 
-    <!-- 화이트 -->
     <div class="team 화이트">
       <h2>화이트 팀</h2>
       <ul>
-        <li>권용</li>
-        <li>서윤서</li>
-        <li>한을</li>
-        <li>홍통치</li>
-        <li>황지환</li>
+        <li>권용</li><li>서윤서</li><li>한을</li>
+        <li>홍통치</li><li>황지환</li>
       </ul>
     </div>
 
-    <!-- 블랙 -->
     <div class="team 블랙">
       <h2>블랙 팀</h2>
       <ul>
-        <li>강인구</li>
-        <li>강지문</li>
-        <li>박류찬</li>
-        <li>서민균</li>
-        <li>전성훈</li>
+        <li>강인구</li><li>강지문</li><li>박류찬</li>
+        <li>서민균</li><li>전성훈</li>
       </ul>
     </div>
 
   </div>
 </div>
 
-<!-- 경기기록 -->
+<!-- 경기 기록 탭 -->
 <div id="gameTab" class="tab-content">
-
   <center>
     <select id="matchSelect" onchange="loadMatch()">
-      <option value="">-- 경기를 선택하세요 --</option>
+      <option value="">-- 경기 선택 --</option>
       <option value="game1">레드 vs 화이트</option>
       <option value="game2">화이트 vs 블랙</option>
       <option value="game3">블랙 vs 레드</option>
     </select>
   </center>
 
-  <div class="scoreboard" id="scoreboard" style="display:none;">
-    <div>
-      <h3 id="teamA_name">TEAM A</h3>
-      <div class="score" id="teamA_score">0</div>
-    </div>
-    <div><h3>VS</h3></div>
-    <div>
-      <h3 id="teamB_name">TEAM B</h3>
-      <div class="score" id="teamB_score">0</div>
-    </div>
+  <div id="scoreboard" class="scoreboard" style="display:none;">
+    <div><span id="teamA_name"></span> : <span id="teamA_score">0</span></div>
+    <div>VS</div>
+    <div><span id="teamB_name"></span> : <span id="teamB_score">0</span></div>
   </div>
 
   <div id="matchArea"></div>
 
-  <div style="text-align:center; margin-top:25px;">
-    <button class="save-btn" onclick="exportCSV()">📤 CSV 저장</button>
-    <button class="save-btn" style="background:#dc3545;" onclick="resetStats()">🗑 초기화</button>
+  <div class="button-group">
+    <button class="save-btn" onclick="exportCSV()">CSV 저장</button>
+    <button class="save-btn" style="background:#dc3545;" onclick="resetStats()">초기화</button>
   </div>
-
 </div>
 
 <script>
-/* 팀 구성 */
+/* ======================
+   팀 구성 (정렬 적용)
+====================== */
 const teams = {
   레드: ["김성호","김창수","서정환","오민형","임문규","한경원"],
   화이트: ["권용","서윤서","한을","홍통치","황지환"],
   블랙: ["강인구","강지문","박류찬","서민균","전성훈"]
 };
 
-/* 매치업 */
+/* 경기 매치업 */
 const matchups = {
-  game1:["레드","화이트"],
-  game2:["화이트","블랙"],
-  game3:["블랙","레드"]
+  game1: ["레드","화이트"],
+  game2: ["화이트","블랙"],
+  game3: ["블랙","레드"]
 };
 
 let currentMatch = "";
 
-/* 탭 */
-function showTab(id, btn){
-  document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
-  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+/* =====================
+      탭 전환
+===================== */
+function showTab(id, btn) {
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   btn.classList.add("active");
 }
 
-/* 경기 로드 */
-function loadMatch(){
+/* =====================
+    경기 로드
+===================== */
+function loadMatch() {
   currentMatch = document.getElementById("matchSelect").value;
   const area = document.getElementById("matchArea");
   const board = document.getElementById("scoreboard");
   area.innerHTML = "";
 
-  if(!currentMatch){ board.style.display="none"; return; }
+  if (!currentMatch) { board.style.display = "none"; return; }
 
-  const [A,B] = matchups[currentMatch];
-  document.getElementById("teamA_name").textContent = A;
-  document.getElementById("teamB_name").textContent = B;
+  const [teamA, teamB] = matchups[currentMatch];
+  document.getElementById("teamA_name").textContent = teamA;
+  document.getElementById("teamB_name").textContent = teamB;
   board.style.display = "flex";
 
-  area.appendChild(createTeamTable(A));
-  area.appendChild(createTeamTable(B));
+  area.appendChild(createTeamTable(teamA));
+  area.appendChild(createTeamTable(teamB));
 
   loadStats();
   updateScores();
 }
 
-/* 테이블 생성 – 스탯 4개 */
-function createTeamTable(teamKey){
-  const div = document.createElement("div");
-  div.className = "team";
+/* =====================
+    팀 테이블 생성 (4스탯)
+===================== */
+function createTeamTable(teamKey) {
+  const teamDiv = document.createElement("div");
 
   const table = document.createElement("table");
   const header = table.insertRow();
-
-  ["선수","득점","리바","어시","파울"].forEach(t=>{
+  ["선수","득점","리바","어시","파울"].forEach(h => {
     const th = document.createElement("th");
-    th.textContent = t;
+    th.textContent = h;
     header.appendChild(th);
   });
 
-  teams[teamKey].forEach(name=>{
+  teams[teamKey].forEach(name => {
     const row = table.insertRow();
-
     const nameCell = row.insertCell();
-    nameCell.textContent = name;
-    nameCell.classList.add("player-name");
+    nameCell.innerHTML = `<b>${name}</b>`;
 
-    /* 스탯 index: 0~3 */
-    for(let i=0;i<4;i++){
+    for (let i = 0; i < 4; i++) {
       const cell = row.insertCell();
       const span = document.createElement("span");
-      span.textContent = "0";
       span.id = `${currentMatch}_${teamKey}_${name}_${i}`;
+      span.textContent = "0";
+
       cell.appendChild(span);
       cell.appendChild(document.createElement("br"));
 
-      if(i===0){ /* 득점 */
-        cell.appendChild(makeBtn("+2",()=>change(span,2)));
-        cell.appendChild(makeBtn("+3",()=>change(span,3)));
-        cell.appendChild(makeBtn("-1",()=>change(span,-1)));
+      if (i === 0) {
+        cell.appendChild(makeBtn("+2", () => changeStat(span, 2)));
+        cell.appendChild(makeBtn("+3", () => changeStat(span, 3)));
+        cell.appendChild(makeBtn("-1", () => changeStat(span, -1)));
       } else {
-        cell.appendChild(makeBtn("+",()=>change(span,1)));
-        cell.appendChild(makeBtn("-",()=>change(span,-1)));
+        cell.appendChild(makeBtn("+", () => changeStat(span, 1)));
+        cell.appendChild(makeBtn("-", () => changeStat(span, -1)));
       }
     }
   });
 
-  div.appendChild(table);
-  return div;
+  teamDiv.appendChild(table);
+  return teamDiv;
 }
 
-function makeBtn(text, fn){
-  const b=document.createElement("button");
-  b.textContent=text;
-  b.className = text.includes("-")?"minus":"plus";
-  if(text==="+3") b.classList.add("plus3");
-  b.onclick=fn;
+function makeBtn(text, fn) {
+  const b = document.createElement("button");
+  b.textContent = text;
+  b.className = text.includes("-") ? "minus" : "plus";
+  if (text === "+3") b.classList.add("plus3");
+  b.onclick = fn;
   return b;
 }
 
-function change(el,val){
+/* =====================
+     스탯 변경 저장
+===================== */
+function changeStat(el, val) {
   let num = parseInt(el.textContent);
   num = Math.max(0, num + val);
   el.textContent = num;
@@ -365,77 +354,90 @@ function change(el,val){
   updateScores();
 }
 
-function saveStats(){
-  if(!currentMatch) return;
-  let store = JSON.parse(localStorage.getItem("reborn_stats")||"{}");
+function saveStats() {
+  if (!currentMatch) return;
+  let existing = JSON.parse(localStorage.getItem("reborn_stats") || "{}");
 
-  Object.keys(teams).forEach(team=>{
-    teams[team].forEach(player=>{
-      for(let i=0;i<4;i++){
-        const id = `${currentMatch}_${team}_${player}_${i}`;
-        const el = document.getElementById(id);
-        if(el) store[id] = el.textContent;
+  Object.keys(teams).forEach(team => {
+    teams[team].forEach(player => {
+      for (let i = 0; i < 4; i++) {
+        const el = document.getElementById(`${currentMatch}_${team}_${player}_${i}`);
+        if (el) existing[`${currentMatch}_${team}_${player}_${i}`] = el.textContent;
       }
     });
   });
 
-  localStorage.setItem("reborn_stats", JSON.stringify(store));
+  localStorage.setItem("reborn_stats", JSON.stringify(existing));
 }
 
-function loadStats(){
-  const saved = JSON.parse(localStorage.getItem("reborn_stats")||"{}");
-  Object.keys(saved).forEach(id=>{
+/* =====================
+     스탯 로드
+===================== */
+function loadStats() {
+  const saved = JSON.parse(localStorage.getItem("reborn_stats") || "{}");
+
+  Object.keys(saved).forEach(id => {
     const el = document.getElementById(id);
-    if(el) el.textContent = saved[id];
+    if (el) el.textContent = saved[id];
   });
 }
 
-function updateScores(){
-  if(!currentMatch) return;
-  const [A,B] = matchups[currentMatch];
-  document.getElementById("teamA_score").textContent = sum(A);
-  document.getElementById("teamB_score").textContent = sum(B);
+/* =====================
+     점수 계산
+===================== */
+function updateScores() {
+  if (!currentMatch) return;
+  const [teamA, teamB] = matchups[currentMatch];
+  document.getElementById("teamA_score").textContent = sumPoints(teamA);
+  document.getElementById("teamB_score").textContent = sumPoints(teamB);
 }
 
-function sum(team){
+function sumPoints(teamKey) {
   let total = 0;
-  teams[team].forEach(name=>{
-    const el = document.getElementById(`${currentMatch}_${team}_${name}_0`);
-    if(el) total += parseInt(el.textContent);
+  teams[teamKey].forEach(name => {
+    const el = document.getElementById(`${currentMatch}_${teamKey}_${name}_0`);
+    if (el) total += parseInt(el.textContent);
   });
   return total;
 }
 
-function exportCSV(){
-  const saved = JSON.parse(localStorage.getItem("reborn_stats")||"{}");
-  if(Object.keys(saved).length===0) return alert("⚠ 저장된 기록이 없습니다!");
+/* =====================
+     CSV 저장
+===================== */
+function exportCSV() {
+  let saved = JSON.parse(localStorage.getItem("reborn_stats") || "{}");
+  if (Object.keys(saved).length === 0) return alert("저장된 기록이 없습니다!");
 
-  let csv = "경기,팀,선수,득점,리바운드,어시스트,파울\n";
+  let csv = "경기,팀,선수,득점,리바,어시,파울\n";
 
-  Object.keys(matchups).forEach(m=>{
-    const [A,B] = matchups[m];
-    [A,B].forEach(team=>{
-      teams[team].forEach(player=>{
-        const arr=[];
-        for(let i=0;i<4;i++){
-          arr.push(saved[`${m}_${team}_${player}_${i}`] || "0");
+  Object.keys(matchups).forEach(matchKey => {
+    const [teamA, teamB] = matchups[matchKey];
+    [teamA, teamB].forEach(teamKey => {
+      teams[teamKey].forEach(name => {
+        const stats = [];
+        for (let i = 0; i < 4; i++) {
+          const id = `${matchKey}_${teamKey}_${name}_${i}`;
+          stats.push(saved[id] || "0");
         }
-        csv += `${m},${team},${player},${arr.join(",")}\n`;
+        csv += `${matchKey},${teamKey},${name},${stats.join(",")}\n`;
       });
     });
-    csv+="\n";
+    csv += "\n";
   });
 
   const BOM = "\uFEFF";
-  const blob = new Blob([BOM+csv], {type:"text/csv;charset=utf-8;"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="REBORN_기록지.csv";
+  const blob = new Blob([BOM + csv], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "REBORN_기록.csv";
   a.click();
 }
 
-function resetStats(){
-  if(!confirm("모든 기록을 삭제하시겠습니까?")) return;
+/* =====================
+     초기화
+===================== */
+function resetStats() {
+  if (!confirm("모든 기록을 삭제합니다.")) return;
   localStorage.removeItem("reborn_stats");
   location.reload();
 }
