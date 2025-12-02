@@ -51,11 +51,9 @@
   }
 
   .tab-content { display: none; }
-  .tab-content.active {
-    display: block;
-  }
+  .tab-content.active { display: block; }
 
-  /* 팀 박스 */
+  /* 팀 container */
   .team-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -78,6 +76,7 @@
     color: white;
   }
 
+  .레드 h2 { background: #d9534f; }
   .화이트 h2 { background: #adb5bd; }
   .블랙 h2 { background: #343a40; }
 
@@ -119,7 +118,6 @@
     font-weight: 700;
   }
 
-  /* 버튼 — 크게 개선 */
   button.plus, button.minus {
     border: none;
     border-radius: 12px;
@@ -186,17 +184,28 @@
 <div id="teamTab" class="tab-content active">
   <div class="team-container">
 
+    <div class="team 레드">
+      <h2>레드 팀</h2>
+      <ul>
+        <li>곽호승</li>
+        <li>김창수</li>
+        <li>오민형</li>
+        <li>임문규</li>
+        <li>한경원</li>
+        <li>김선홍(게스트)</li>
+      </ul>
+    </div>
+
     <div class="team 화이트">
       <h2>화이트 팀</h2>
       <ul>
         <li>권용</li>
         <li>김성호</li>
-        <li>김창수</li>
-        <li>서윤서</li>
+        <li>서민균</li>
         <li>서정환</li>
-        <li>오민형</li>
-        <li>임문규</li>
-        <li>한경원</li>
+        <li>서윤서</li>
+        <li>홍통치</li>
+        <li>이하민(게스트)</li>
       </ul>
     </div>
 
@@ -205,10 +214,9 @@
       <ul>
         <li>강인구</li>
         <li>강지문</li>
-        <li>서민균</li>
+        <li>박류찬</li>
+        <li>유채훈</li>
         <li>전성훈</li>
-        <li>한을</li>
-        <li>홍통치</li>
         <li>황지환</li>
       </ul>
     </div>
@@ -221,9 +229,9 @@
   <center>
     <select id="matchSelect" onchange="loadMatch()">
       <option value="">-- 경기 선택 --</option>
-      <option value="game1">블랙 vs 화이트 (1경기)</option>
-      <option value="game2">블랙 vs 화이트 (2경기)</option>
-      <option value="game3">블랙 vs 화이트 (3경기)</option>
+      <option value="game1">블랙 vs 레드</option>
+      <option value="game2">레드 vs 화이트</option>
+      <option value="game3">화이트 vs 블랙</option>
     </select>
   </center>
 
@@ -242,21 +250,23 @@
 </div>
 
 <script>
+
 /* ======================
-   팀 구성
+   팀 구성 (정렬 반영)
 ====================== */
 const teams = {
-  화이트: ["권용","김성호","김창수","서윤서","서정환","오민형","임문규","한경원"],
-  블랙: ["강인구","강지문","서민균","전성훈","한을","홍통치","황지환"]
+  레드: ["곽호승","김창수","오민형","임문규","한경원","김선홍(게스트)"],
+  화이트: ["권용","김성호","서민균","서정환","서윤서","홍통치","이하민(게스트)"],
+  블랙: ["강인구","강지문","박류찬","유채훈","전성훈","황지환"]
 };
 
 /* ======================
-   경기 매칭 (3경기)
+   3파전 매칭
 ====================== */
 const matchups = {
-  game1: ["블랙","화이트"],
-  game2: ["블랙","화이트"],
-  game3: ["블랙","화이트"]
+  game1: ["블랙","레드"],
+  game2: ["레드","화이트"],
+  game3: ["화이트","블랙"]
 };
 
 let currentMatch = "";
@@ -296,11 +306,10 @@ function loadMatch() {
 }
 
 /* ======================
-   팀 테이블 생성 (스탯 3개)
+   팀 테이블 생성
 ====================== */
 function createTeamTable(teamKey) {
   const teamDiv = document.createElement("div");
-
   const table = document.createElement("table");
   const header = table.insertRow();
 
@@ -412,7 +421,7 @@ function sumPoints(teamKey) {
 }
 
 /* ======================
-   CSV 저장 (파울 제거)
+   CSV 저장
 ====================== */
 function exportCSV() {
   let saved = JSON.parse(localStorage.getItem("reborn_stats") || "{}");
@@ -440,7 +449,6 @@ function exportCSV() {
   });
 
   const BOM = "\uFEFF";
-
   const blob = new Blob([BOM + csv], { type: "text/csv;charset=utf-8;" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
