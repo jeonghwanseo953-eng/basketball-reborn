@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -134,20 +135,34 @@ public class AuthService {
 			.append("&redirect_uri=").append(encode(redirectUri))
 			.append("&code=").append(encode(code));
 
-		return restClient.post()
-			.uri("https://kauth.kakao.com/oauth/token")
-			.header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=utf-8")
-			.body(body.toString())
-			.retrieve()
-			.body(Map.class);
+		try {
+			return restClient.post()
+				.uri("https://kauth.kakao.com/oauth/token")
+				.header(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded;charset=utf-8")
+				.body(body.toString())
+				.retrieve()
+				.body(Map.class);
+		} catch (RestClientResponseException exception) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_GATEWAY,
+				"Kakao token request failed: " + exception.getResponseBodyAsString()
+			);
+		}
 	}
 
 	private Map<?, ?> requestKakaoUser(String accessToken) {
-		return restClient.get()
-			.uri("https://kapi.kakao.com/v2/user/me")
-			.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-			.retrieve()
-			.body(Map.class);
+		try {
+			return restClient.get()
+				.uri("https://kapi.kakao.com/v2/user/me")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+				.retrieve()
+				.body(Map.class);
+		} catch (RestClientResponseException exception) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_GATEWAY,
+				"Kakao user request failed: " + exception.getResponseBodyAsString()
+			);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
