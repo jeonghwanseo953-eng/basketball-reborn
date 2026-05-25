@@ -31,7 +31,6 @@ public class AuthService {
 	private final MemberRepository memberRepository;
 	private final RestClient restClient;
 	private final String kakaoRestApiKey;
-	private final String kakaoClientSecret;
 	private final boolean devLoginEnabled;
 
 	public AuthService(KakaoAccountRepository kakaoAccountRepository,
@@ -39,14 +38,12 @@ public class AuthService {
 		MemberRepository memberRepository,
 		RestClient.Builder restClientBuilder,
 		@Value("${app.kakao.rest-api-key:}") String kakaoRestApiKey,
-		@Value("${app.kakao.client-secret:}") String kakaoClientSecret,
 		@Value("${app.auth.dev-login-enabled:false}") boolean devLoginEnabled) {
 		this.kakaoAccountRepository = kakaoAccountRepository;
 		this.authSessionRepository = authSessionRepository;
 		this.memberRepository = memberRepository;
 		this.restClient = restClientBuilder.build();
 		this.kakaoRestApiKey = kakaoRestApiKey;
-		this.kakaoClientSecret = kakaoClientSecret;
 		this.devLoginEnabled = devLoginEnabled;
 	}
 
@@ -136,10 +133,6 @@ public class AuthService {
 			.append("&client_id=").append(encode(kakaoRestApiKey))
 			.append("&redirect_uri=").append(encode(redirectUri))
 			.append("&code=").append(encode(code));
-
-		if (!kakaoClientSecret.isBlank()) {
-			body.append("&client_secret=").append(encode(kakaoClientSecret));
-		}
 
 		return restClient.post()
 			.uri("https://kauth.kakao.com/oauth/token")
