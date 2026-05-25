@@ -1807,7 +1807,12 @@ function EntranceScreen({ onGuest, onKakao }: { onGuest: () => void; onKakao: ()
                 type="button"
                 onClick={onKakao}
               >
-                <span className="block text-lg font-black">카카오로 로그인</span>
+                <span className="flex items-center gap-2 text-lg font-black">
+                  <span className="inline-flex h-6 min-w-9 items-center justify-center rounded-full bg-slate-950 px-2 text-[10px] font-black leading-none text-[#fee500]">
+                    TALK
+                  </span>
+                  카카오로 로그인
+                </span>
                 <span className="mt-1 block text-sm font-semibold text-slate-700">운영 기능까지 모두 사용</span>
               </button>
               <button
