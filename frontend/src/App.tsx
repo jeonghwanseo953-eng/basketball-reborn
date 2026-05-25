@@ -228,6 +228,26 @@ function App() {
     }
   }
 
+  async function createFirstMemberAndLink(payload: Pick<MemberRequest, "name" | "birthYear" | "height" | "position" | "region">) {
+    try {
+      setLoading(true)
+      setError(null)
+      const created = await createMember({
+        ...payload,
+        role: "PRESIDENT",
+        status: "REGULAR",
+        restUntilDate: null,
+        memo: "최초 관리자",
+      })
+      await linkCurrentMember(created.id)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "최초 회원을 생성하지 못했습니다.")
+      setLinkableMembers(await getLinkableMembers().catch(() => []))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   function logout() {
     localStorage.removeItem(authStorageKey)
     setAuthSession(null)
@@ -1324,6 +1344,7 @@ function App() {
         loading={loading}
         members={linkableMembers}
         nickname={authSession.name}
+        onCreateFirstMember={(payload) => void createFirstMemberAndLink(payload)}
         onLink={(memberId) => void linkCurrentMember(memberId)}
         onLogout={logout}
       />
@@ -1809,12 +1830,14 @@ function MemberLinkScreen({
   loading,
   members,
   nickname,
+  onCreateFirstMember,
   onLink,
   onLogout,
 }: {
   loading: boolean
   members: Member[]
   nickname: string
+  onCreateFirstMember: (payload: Pick<MemberRequest, "name" | "birthYear" | "height" | "position" | "region">) => void
   onLink: (memberId: number) => void
   onLogout: () => void
 }) {
@@ -1822,6 +1845,13 @@ function MemberLinkScreen({
     .filter((member) => !member.kakaoLinked)
     .toSorted((left, right) => left.name.localeCompare(right.name, "ko"))
   const [memberSearch, setMemberSearch] = useState("")
+  const [firstMemberForm, setFirstMemberForm] = useState({
+    name: nickname,
+    birthYear: "",
+    height: "",
+    position: "가드",
+    region: "",
+  })
   const searchedMembers = linkableMembers.filter((member) => {
     const keyword = memberSearch.trim().toLowerCase()
     if (!keyword) {
@@ -1903,9 +1933,74 @@ function MemberLinkScreen({
                 </p>
               )
             ) : (
-              <p className="rounded-md border border-border bg-secondary/35 p-4 text-sm font-semibold text-muted-foreground">
-                연동 가능한 회원이 없습니다. 관리자에게 회원 등록 또는 연동 해제를 요청해주세요.
-              </p>
+              <form
+                className="rounded-md border border-accent/35 bg-accent/5 p-4"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  if (!firstMemberForm.name.trim()) {
+                    return
+                  }
+
+                  onCreateFirstMember({
+                    name: firstMemberForm.name.trim(),
+                    birthYear: firstMemberForm.birthYear ? Number(firstMemberForm.birthYear) : null,
+                    height: firstMemberForm.height ? Number(firstMemberForm.height) : null,
+                    position: firstMemberForm.position,
+                    region: firstMemberForm.region.trim(),
+                  })
+                }}
+              >
+                <div className="mb-3">
+                  <p className="text-sm font-black text-foreground">최초 관리자 생성</p>
+                  <p className="mt-1 text-xs font-semibold leading-5 text-muted-foreground">
+                    아직 등록된 회원이 없습니다. 첫 회원을 만들고 이 카카오 계정에 바로 연동합니다.
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <input
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="이름"
+                    value={firstMemberForm.name}
+                    onChange={(event) => setFirstMemberForm((current) => ({ ...current, name: event.target.value }))}
+                  />
+                  <select
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-ring"
+                    value={firstMemberForm.position}
+                    onChange={(event) => setFirstMemberForm((current) => ({ ...current, position: event.target.value }))}
+                  >
+                    <option value="가드">가드</option>
+                    <option value="포워드">포워드</option>
+                    <option value="센터">센터</option>
+                  </select>
+                  <input
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-ring"
+                    inputMode="numeric"
+                    placeholder="출생연도"
+                    value={firstMemberForm.birthYear}
+                    onChange={(event) => setFirstMemberForm((current) => ({ ...current, birthYear: event.target.value.replace(/\D/g, "").slice(0, 4) }))}
+                  />
+                  <input
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-ring"
+                    inputMode="numeric"
+                    placeholder="키"
+                    value={firstMemberForm.height}
+                    onChange={(event) => setFirstMemberForm((current) => ({ ...current, height: event.target.value.replace(/\D/g, "").slice(0, 3) }))}
+                  />
+                  <input
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-ring sm:col-span-2"
+                    placeholder="지역"
+                    value={firstMemberForm.region}
+                    onChange={(event) => setFirstMemberForm((current) => ({ ...current, region: event.target.value }))}
+                  />
+                </div>
+                <button
+                  className="mt-3 inline-flex h-10 w-full items-center justify-center rounded-md bg-accent px-4 text-sm font-black text-accent-foreground transition-colors hover:bg-accent/90 disabled:opacity-50"
+                  type="submit"
+                  disabled={loading || !firstMemberForm.name.trim()}
+                >
+                  {loading ? "생성 중" : "첫 회원 생성 후 연동"}
+                </button>
+              </form>
             )}
           </div>
         </section>
