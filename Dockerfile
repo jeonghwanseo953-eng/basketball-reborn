@@ -12,6 +12,7 @@ COPY gradle ./gradle
 COPY gradlew ./
 COPY src ./src
 COPY --from=frontend /app/frontend/dist ./frontend/dist
+RUN chmod +x ./gradlew
 RUN ./gradlew bootJar -PskipFrontendBuild -x test --no-daemon
 
 FROM eclipse-temurin:17-jre-alpine
