@@ -2,7 +2,7 @@ services:
   - type: web
     name: reborn
     env: docker
-    plan: starter
+    plan: free
     healthCheckPath: /
     envVars:
       - key: SPRING_PROFILES_ACTIVE
@@ -34,4 +34,4 @@ services:
 
 databases:
   - name: reborn-db
-    plan: starter
+    plan: free
