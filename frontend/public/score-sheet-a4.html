@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RE:BORN 경기 점수판</title>
+    <style>
+      @page {
+        size: A4 landscape;
+        margin: 10mm;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #ffffff;
+        color: #111827;
+        font-family:
+          Pretendard,
+          "Apple SD Gothic Neo",
+          "Malgun Gothic",
+          Arial,
+          sans-serif;
+      }
+
+      .sheet {
+        width: 277mm;
+        min-height: 190mm;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 0;
+      }
+
+      .score-table {
+        width: 100%;
+        height: 190mm;
+        border-collapse: collapse;
+        table-layout: fixed;
+        border: 2.5px solid #111827;
+      }
+
+      .score-table th,
+      .score-table td {
+        border: 2px solid #1f2937;
+      }
+
+      .score-table th {
+        height: 36mm;
+        background: #f8fafc;
+        padding: 8px;
+      }
+
+      .quarter-head {
+        width: 18mm;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .quarter-cell {
+        width: 18mm;
+        background: #f8fafc;
+        color: #111827;
+        font-size: 22px;
+        font-weight: 900;
+        text-align: center;
+      }
+
+      .score-cell {
+        height: 40mm;
+        background: #ffffff;
+        text-align: center;
+      }
+
+      .matchup {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        width: 100%;
+      }
+
+      .team {
+        display: inline-flex;
+        min-width: 34mm;
+        justify-content: center;
+        border: 2px solid;
+        border-radius: 8px;
+        padding: 7px 12px;
+        font-size: 24px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .team.black {
+        border-color: #111827;
+        background: #111827;
+        color: #ffffff;
+      }
+
+      .team.white {
+        border-color: #cbd5e1;
+        background: #ffffff;
+        color: #111827;
+      }
+
+      .team.red {
+        border-color: #b91c1c;
+        background: #dc2626;
+        color: #ffffff;
+      }
+
+      .colon {
+        color: #111827;
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .blank-score {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 88%;
+        height: 18mm;
+        color: #111827;
+        font-size: 32px;
+        font-weight: 900;
+      }
+
+      @media print {
+        .sheet {
+          width: auto;
+          min-height: 190mm;
+          margin: 0;
+          border: 0;
+          padding: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="sheet">
+      <table class="score-table" aria-label="3파전 쿼터별 누적 점수 기록표">
+        <thead>
+          <tr>
+            <th class="quarter-head">Q</th>
+            <th>
+              <div class="matchup">
+                <span class="team black">블랙</span>
+                <span class="colon">:</span>
+                <span class="team red">레드</span>
+              </div>
+            </th>
+            <th>
+              <div class="matchup">
+                <span class="team black">블랙</span>
+                <span class="colon">:</span>
+                <span class="team white">화이트</span>
+              </div>
+            </th>
+            <th>
+              <div class="matchup">
+                <span class="team white">화이트</span>
+                <span class="colon">:</span>
+                <span class="team red">레드</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="quarter-cell">1Q</td>
+            <td class="score-cell"><div class="blank-score">:</div></td>
+            <td class="score-cell"><div class="blank-score">:</div></td>
+            <td class="score-cell"><div class="blank-score">:</div></td>
+          </tr>
+          <tr>
+            <td class="quarter-cell">2Q</td>
+            <td class="score-cell"><div class="blank-score">:</div></td>
+            <td class="score-cell"><div class="blank-score">:</div></td>
+            <td class="score-cell"><div class="blank-score">:</div></td>
+          </tr>
+          <tr>
+            <td class="quarter-cell">3Q</td>
+            <td class="score-cell"><div class="blank-score">:</div></td>
+            <td class="score-cell"><div class="blank-score">:</div></td>
+            <td class="score-cell"><div class="blank-score">:</div></td>
+          </tr>
+          <tr>
+            <td class="quarter-cell">4Q</td>
+            <td class="score-cell"><div class="blank-score">:</div></td>
+            <td class="score-cell"><div class="blank-score">:</div></td>
+            <td class="score-cell"><div class="blank-score">:</div></td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --background: 213 24% 93%;
+    --foreground: 218 30% 14%;
+    --card: 214 28% 97%;
+    --card-foreground: 218 30% 14%;
+    --primary: 214 58% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 22% 88%;
+    --secondary-foreground: 218 28% 18%;
+    --muted: 214 18% 86%;
+    --muted-foreground: 216 16% 38%;
+    --accent: 204 64% 40%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 18% 76%;
+    --input: 214 18% 76%;
+    --ring: 204 64% 40%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    margin: 0;
+    font-family:
+      Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+}
+
+.court-lines {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  opacity: 0.05;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 1px), hsl(var(--accent)) 50%, transparent calc(50% + 1px)),
+    linear-gradient(0deg, transparent calc(50% - 1px), hsl(var(--primary)) 50%, transparent calc(50% + 1px));
+}
+
+.court-lines::before,
+.court-lines::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(58vw, 520px);
+  aspect-ratio: 1;
+  border: 2px solid hsl(var(--accent));
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+}
+
+.court-lines::after {
+  width: min(22vw, 180px);
+  border-color: hsl(var(--primary));
+}
+
+.scoreboard {
+  box-shadow: inset 0 0 0 1px hsl(var(--accent) / 0.12), 0 18px 40px hsl(218 30% 14% / 0.08);
+}
+
+.modal-overlay {
+  animation: modal-overlay-in 160ms ease-out both;
+}
+
+.modal-panel {
+  animation: modal-panel-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.team-move-flash {
+  animation: team-move-flash 2100ms ease-out both;
+}
+
+@keyframes modal-overlay-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes team-move-flash {
+  0% {
+    background-color: rgb(224 242 254 / 0.95);
+    border-color: rgb(14 165 233 / 0.85);
+    box-shadow: 0 0 0 0 rgb(14 165 233 / 0.34);
+    transform: scale(1);
+  }
+
+  20% {
+    background-color: rgb(224 242 254 / 1);
+    border-color: rgb(14 165 233 / 0.95);
+    box-shadow: 0 0 0 5px rgb(14 165 233 / 0.22), 0 10px 20px hsl(218 30% 14% / 0.12);
+    transform: scale(1.025);
+  }
+
+  62% {
+    background-color: rgb(224 242 254 / 0.7);
+    border-color: rgb(14 165 233 / 0.6);
+    box-shadow: 0 0 0 3px rgb(14 165 233 / 0.14);
+    transform: scale(1.01);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgb(14 165 233 / 0);
+    transform: scale(1);
+  }
+}
