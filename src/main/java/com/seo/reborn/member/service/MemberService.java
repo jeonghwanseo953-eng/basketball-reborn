@@ -1,6 +1,7 @@
 package com.seo.reborn.member.service;
 
 import com.seo.reborn.auth.repository.KakaoAccountRepository;
+import com.seo.reborn.member.MemberRoleSchemaUpdater;
 import com.seo.reborn.member.domain.Member;
 import com.seo.reborn.member.domain.MemberRole;
 import com.seo.reborn.member.dto.MemberRequest;
@@ -18,10 +19,16 @@ public class MemberService {
 
 	private final MemberRepository memberRepository;
 	private final KakaoAccountRepository kakaoAccountRepository;
+	private final MemberRoleSchemaUpdater memberRoleSchemaUpdater;
 
-	public MemberService(MemberRepository memberRepository, KakaoAccountRepository kakaoAccountRepository) {
+	public MemberService(
+		MemberRepository memberRepository,
+		KakaoAccountRepository kakaoAccountRepository,
+		MemberRoleSchemaUpdater memberRoleSchemaUpdater
+	) {
 		this.memberRepository = memberRepository;
 		this.kakaoAccountRepository = kakaoAccountRepository;
+		this.memberRoleSchemaUpdater = memberRoleSchemaUpdater;
 	}
 
 	public List<MemberResponse> findAll() {
@@ -36,6 +43,7 @@ public class MemberService {
 
 	@Transactional
 	public MemberResponse create(MemberRequest request) {
+		updateRoleSchemaIfNeeded(request.role());
 		validateUniqueRole(null, request.role());
 
 		Member member = Member.create(
@@ -56,6 +64,7 @@ public class MemberService {
 	@Transactional
 	public MemberResponse update(Long id, MemberRequest request) {
 		Member member = getMember(id);
+		updateRoleSchemaIfNeeded(request.role());
 		validateUniqueRole(id, request.role());
 
 		member.update(
@@ -130,5 +139,11 @@ public class MemberService {
 			case WEB_ADMIN -> "웹관리자";
 			case NONE -> "직책";
 		};
+	}
+
+	private void updateRoleSchemaIfNeeded(MemberRole role) {
+		if (role == MemberRole.WEB_ADMIN) {
+			memberRoleSchemaUpdater.updateRoleCheckConstraint();
+		}
 	}
 }

@@ -6,6 +6,7 @@ import com.seo.reborn.auth.dto.AuthResponse;
 import com.seo.reborn.auth.repository.AuthSessionRepository;
 import com.seo.reborn.auth.repository.KakaoAccountRepository;
 import com.seo.reborn.member.domain.Member;
+import com.seo.reborn.member.domain.MemberRole;
 import com.seo.reborn.member.dto.MemberResponse;
 import com.seo.reborn.member.repository.MemberRepository;
 import java.net.URLEncoder;
@@ -33,19 +34,22 @@ public class AuthService {
 	private final RestClient restClient;
 	private final String kakaoRestApiKey;
 	private final boolean devLoginEnabled;
+	private final String bootstrapWebAdminName;
 
 	public AuthService(KakaoAccountRepository kakaoAccountRepository,
 		AuthSessionRepository authSessionRepository,
 		MemberRepository memberRepository,
 		RestClient.Builder restClientBuilder,
 		@Value("${app.kakao.rest-api-key:}") String kakaoRestApiKey,
-		@Value("${app.auth.dev-login-enabled:false}") boolean devLoginEnabled) {
+		@Value("${app.auth.dev-login-enabled:false}") boolean devLoginEnabled,
+		@Value("${app.bootstrap.web-admin-name:}") String bootstrapWebAdminName) {
 		this.kakaoAccountRepository = kakaoAccountRepository;
 		this.authSessionRepository = authSessionRepository;
 		this.memberRepository = memberRepository;
 		this.restClient = restClientBuilder.build();
 		this.kakaoRestApiKey = kakaoRestApiKey;
 		this.devLoginEnabled = devLoginEnabled;
+		this.bootstrapWebAdminName = bootstrapWebAdminName;
 	}
 
 	public String createLoginUrl(String redirectUri, String state) {
@@ -68,7 +72,7 @@ public class AuthService {
 		String kakaoId = String.valueOf(userResponse.get("id"));
 		String nickname = extractNickname(userResponse);
 
-		return createSession(upsertAccount(kakaoId, nickname));
+		return createSession(prepareLoginAccount(kakaoId, nickname));
 	}
 
 	@Transactional
@@ -77,7 +81,7 @@ public class AuthService {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dev login is disabled");
 		}
 
-		KakaoAccount account = upsertAccount("dev-local", "개발용 카카오");
+		KakaoAccount account = prepareLoginAccount("dev-local", "개발용 카카오");
 		return createSession(account);
 	}
 
@@ -126,6 +130,33 @@ public class AuthService {
 				return account;
 			})
 			.orElseGet(() -> kakaoAccountRepository.save(KakaoAccount.create(kakaoId, nickname)));
+	}
+
+	private KakaoAccount prepareLoginAccount(String kakaoId, String nickname) {
+		KakaoAccount account = upsertAccount(kakaoId, nickname);
+
+		if (account.getMember() == null) {
+			memberRepository.findFirstByName(nickname)
+				.filter(member -> !kakaoAccountRepository.existsByMemberIdAndIdNot(member.getId(), account.getId()))
+				.ifPresent(account::linkMember);
+		}
+
+		assignBootstrapWebAdmin(account.getMember());
+		return account;
+	}
+
+	private void assignBootstrapWebAdmin(Member member) {
+		if (member == null || bootstrapWebAdminName.isBlank() || !bootstrapWebAdminName.equals(member.getName())) {
+			return;
+		}
+
+		memberRepository.findFirstByRole(MemberRole.WEB_ADMIN)
+			.filter(webAdmin -> !webAdmin.getId().equals(member.getId()))
+			.ifPresentOrElse(
+				ignored -> {
+				},
+				() -> member.assignRole(MemberRole.WEB_ADMIN)
+			);
 	}
 
 	private Map<?, ?> requestKakaoToken(String code, String redirectUri) {

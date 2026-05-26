@@ -1,6 +1,7 @@
 package com.seo.reborn.global.error;
 
 import java.util.List;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -35,6 +36,15 @@ public class GlobalExceptionHandler {
 			status.value(),
 			status.name(),
 			message
+		));
+	}
+
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException exception) {
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.of(
+			HttpStatus.CONFLICT.value(),
+			HttpStatus.CONFLICT.name(),
+			"저장 중 데이터 제약 조건에 걸렸습니다. 잠시 후 다시 시도해주세요."
 		));
 	}
 

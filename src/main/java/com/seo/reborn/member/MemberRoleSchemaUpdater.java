@@ -30,10 +30,16 @@ public class MemberRoleSchemaUpdater implements ApplicationRunner {
 
 	@Override
 	public void run(ApplicationArguments args) {
+		updateRoleCheckConstraint();
+	}
+
+	public void updateRoleCheckConstraint() {
 		try {
 			if (!isPostgreSql() || !tableExists("members")) {
 				return;
 			}
+
+			jdbcTemplate.execute("alter table members drop constraint if exists chk_members_role");
 
 			List<String> roleCheckNames = jdbcTemplate.queryForList("""
 				select c.conname
@@ -43,10 +49,10 @@ public class MemberRoleSchemaUpdater implements ApplicationRunner {
 				where t.relname = 'members'
 				  and c.contype = 'c'
 				  and pg_get_constraintdef(c.oid) like '%role%'
-				""", String.class);
+			""", String.class);
 
 			for (String constraintName : roleCheckNames) {
-				jdbcTemplate.execute("alter table members drop constraint if exists " + constraintName);
+				jdbcTemplate.execute("alter table members drop constraint if exists " + quoteIdentifier(constraintName));
 			}
 
 			jdbcTemplate.execute("alter table members add constraint chk_members_role check (" + ROLE_CHECK_SQL + ")");
@@ -68,5 +74,9 @@ public class MemberRoleSchemaUpdater implements ApplicationRunner {
 				return resultSet.next();
 			}
 		}
+	}
+
+	private String quoteIdentifier(String value) {
+		return "\"" + value.replace("\"", "\"\"") + "\"";
 	}
 }
