@@ -367,6 +367,7 @@ function OverviewSection({
           icon={UsersRound}
           title="승률 듀오"
           description="승률"
+          memberById={memberById}
           stat={statisticsOverview?.bestDuo ?? null}
           value={statisticsOverview?.bestDuo ? `${statisticsOverview.bestDuo.winRate}%` : "-"}
           meta={
@@ -380,6 +381,7 @@ function OverviewSection({
           icon={Target}
           title="득점 듀오"
           description="득점"
+          memberById={memberById}
           stat={statisticsOverview?.bestScoringDuo ?? null}
           value={statisticsOverview?.bestScoringDuo ? `${statisticsOverview.bestScoringDuo.averagePointsFor}점` : "-"}
           meta={
@@ -393,6 +395,7 @@ function OverviewSection({
           icon={ShieldCheck}
           title="철벽 듀오"
           description="실점"
+          memberById={memberById}
           stat={statisticsOverview?.bestDefenseDuo ?? null}
           value={statisticsOverview?.bestDefenseDuo ? `${statisticsOverview.bestDefenseDuo.averagePointsAgainst}점` : "-"}
           meta={
@@ -406,6 +409,7 @@ function OverviewSection({
           icon={Trophy}
           title="호흡 듀오"
           description="횟수"
+          memberById={memberById}
           stat={statisticsOverview?.mostPlayedDuo ?? null}
           value={statisticsOverview?.mostPlayedDuo ? `${statisticsOverview.mostPlayedDuo.playedCount}회` : "-"}
           meta={
@@ -495,6 +499,7 @@ function CombinationLeaderCard({
   icon: Icon,
   title,
   description,
+  memberById,
   stat,
   value,
   meta,
@@ -503,6 +508,7 @@ function CombinationLeaderCard({
   icon: ComponentType<{ className?: string }>
   title: string
   description: string
+  memberById: Map<number, Member>
   stat: CombinationStatistics | null
   value: string
   meta: string
@@ -521,12 +527,13 @@ function CombinationLeaderCard({
           <p className="mt-4 text-xs font-black text-muted-foreground">{title}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {stat ? (
-              stat.memberNames.map((name) => (
+              stat.memberNames.map((name, index) => (
                 <span
                   key={name}
-                  className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-black text-foreground"
+                  className="inline-flex min-w-0 items-center gap-2 rounded-md border border-border bg-background py-1.5 pl-1.5 pr-3 text-sm font-black text-foreground"
                 >
-                  {name}
+                  <StatProfileAvatar member={memberById.get(stat.memberIds[index]) ?? null} name={name} size="xs" />
+                  <span className="min-w-0 truncate">{name}</span>
                 </span>
               ))
             ) : (
