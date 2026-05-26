@@ -317,7 +317,7 @@ function App() {
         setResultForm((current) => ({ ...current, gameDayId: defaultGameDayId }))
       }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "?????녿뒗 ?ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.")
+      setError(cause instanceof Error ? cause.message : "알 수 없는 오류가 발생했습니다.")
     } finally {
       setLoading(false)
     }
@@ -346,7 +346,7 @@ function App() {
       }
       setMemberForm(emptyMemberForm)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "?뚯썝????ν븯吏 紐삵뻽?듬땲??")
+      setError(cause instanceof Error ? cause.message : "회원을 저장하지 못했습니다.")
     } finally {
       setSavingMember(false)
     }
@@ -463,7 +463,7 @@ function App() {
       setGameForm(emptyGameForm)
       setDashboard(await getDashboard())
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "寃쎄린 ?쇱젙????ν븯吏 紐삵뻽?듬땲??")
+      setError(cause instanceof Error ? cause.message : "경기 일정을 저장하지 못했습니다.")
     } finally {
       setSavingGame(false)
     }
@@ -515,7 +515,7 @@ function App() {
       lowerMessage.includes("referential") ||
       lowerMessage.includes("violates")
     ) {
-      return "?곌껐???곗씠?곌? ?덉뼱????젣?????놁뒿?덈떎. ?ㅼ젣 ?댁쁺?먯꽌????젣蹂대떎 ?곹깭 蹂寃쎌쓣 癒쇱? ?ъ슜?섏꽭??"
+      return "연결된 데이터가 있어서 삭제할 수 없습니다. 실제 운영에서는 삭제보다 상태 변경을 먼저 사용하세요."
     }
 
     return message
@@ -542,7 +542,7 @@ function App() {
       }
       setDashboard(await getDashboard())
     } catch (cause) {
-      setError(getDeleteErrorMessage(cause, "?뚯썝????젣?섏? 紐삵뻽?듬땲??"))
+      setError(getDeleteErrorMessage(cause, "회원을 삭제하지 못했습니다."))
     }
   }
 
@@ -633,12 +633,12 @@ function App() {
       const gameDay = gameDays.find((currentGameDay) => currentGameDay.id === selectedGameDayId)
       const validationIssues = getTeamValidationIssues(gameDay, teams, members)
 
-      if (validationIssues.length) {
+      if (hasBlockingValidationIssue(validationIssues)) {
         setTeamValidationConfirm({
           action: "close",
           title: "팀 구성을 닫을까요?",
-          description: "아직 확인할 팀 구성 항목이 남아 있습니다.",
-          confirmLabel: "닫기",
+          description: "닫기 전에 확인이 필요한 팀 구성 항목이 남아 있습니다.",
+          confirmLabel: "그래도 닫기",
           issues: validationIssues,
         })
         return
@@ -649,12 +649,12 @@ function App() {
       const gameDay = gameDays.find((currentGameDay) => currentGameDay.id === selectedGameDayId)
       const validationIssues = getResultValidationIssues(gameDay, gameResults)
 
-      if (validationIssues.length) {
+      if (hasBlockingValidationIssue(validationIssues)) {
         setTeamValidationConfirm({
           action: "close",
           title: "결과 입력을 닫을까요?",
-          description: "아직 확인할 경기 결과 항목이 남아 있습니다.",
-          confirmLabel: "닫기",
+          description: "닫기 전에 확인이 필요한 경기 결과 항목이 남아 있습니다.",
+          confirmLabel: "그래도 닫기",
           issues: validationIssues,
         })
         return
@@ -753,7 +753,7 @@ function App() {
       setAttendanceSummary(await getAttendanceSummary(selectedGameDayId))
       setDashboard(await getDashboard())
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "李몄꽍 ?ы몴瑜???ν븯吏 紐삵뻽?듬땲??")
+      setError(cause instanceof Error ? cause.message : "참석 투표를 저장하지 못했습니다.")
     } finally {
       setSavingAttendance(false)
     }
@@ -934,7 +934,7 @@ function App() {
       setResultForm(normalizeResultFormForGameDay({ ...emptyResultForm, gameDayId: selectedGameDayId }, selectedGameDayId))
       setDashboard(await getDashboard())
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "寃쎄린 寃곌낵瑜???ν븯吏 紐삵뻽?듬땲??")
+      setError(cause instanceof Error ? cause.message : "경기 결과를 저장하지 못했습니다.")
     } finally {
       setSavingResult(false)
     }
@@ -978,7 +978,7 @@ function App() {
       setNoticeForm(emptyNoticeForm)
       setDashboard(await getDashboard())
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "怨듭?瑜???ν븯吏 紐삵뻽?듬땲??")
+      setError(cause instanceof Error ? cause.message : "공지를 저장하지 못했습니다.")
     } finally {
       setSavingNotice(false)
     }
@@ -1045,7 +1045,7 @@ function App() {
       }
       setFeeMonthForm(emptyFeeMonthForm)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "?뚮퉬 ?붿쓣 ??ν븯吏 紐삵뻽?듬땲??")
+      setError(cause instanceof Error ? cause.message : "회비 월을 저장하지 못했습니다.")
     } finally {
       setSavingFee(false)
     }
@@ -1092,7 +1092,7 @@ function App() {
       setFeePaymentForm({ ...emptyFeePaymentForm, feeMonthId: selectedFeeMonthId })
       await loadFees(selectedFeeMonthId)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "?⑸? ?댁뿭????ν븯吏 紐삵뻽?듬땲??")
+      setError(cause instanceof Error ? cause.message : "납부 내역을 저장하지 못했습니다.")
     } finally {
       setSavingFee(false)
     }
@@ -1134,7 +1134,7 @@ function App() {
       setFeeExpenseForm({ ...emptyFeeExpenseForm, feeMonthId: selectedFeeMonthId })
       await loadFees(selectedFeeMonthId)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "吏異??댁뿭????ν븯吏 紐삵뻽?듬땲??")
+      setError(cause instanceof Error ? cause.message : "지출 내역을 저장하지 못했습니다.")
     } finally {
       setSavingFee(false)
     }
@@ -1176,7 +1176,7 @@ function App() {
         setDashboard(await getDashboard())
       }
     } catch (cause) {
-      setError(getDeleteErrorMessage(cause, "李몄꽍 ?ы몴瑜???젣?섏? 紐삵뻽?듬땲??"))
+      setError(getDeleteErrorMessage(cause, "참석 투표를 삭제하지 못했습니다."))
     }
   }
 
@@ -1192,7 +1192,7 @@ function App() {
       setNotices((current) => current.filter((notice) => notice.id !== id))
       setDashboard(await getDashboard())
     } catch (cause) {
-      setError(getDeleteErrorMessage(cause, "怨듭?瑜???젣?섏? 紐삵뻽?듬땲??"))
+      setError(getDeleteErrorMessage(cause, "공지를 삭제하지 못했습니다."))
     }
   }
 
@@ -1210,7 +1210,7 @@ function App() {
       }
       await loadFees(selectedFeeMonthId)
     } catch (cause) {
-      setError(getDeleteErrorMessage(cause, "?⑸? ?댁뿭????젣?섏? 紐삵뻽?듬땲??"))
+      setError(getDeleteErrorMessage(cause, "납부 내역을 삭제하지 못했습니다."))
     }
   }
 
@@ -1237,7 +1237,7 @@ function App() {
         }
       }
     } catch (cause) {
-      setError(getDeleteErrorMessage(cause, "?뚮퉬 ?붿쓣 ??젣?섏? 紐삵뻽?듬땲??"))
+      setError(getDeleteErrorMessage(cause, "회비 월을 삭제하지 못했습니다."))
     }
   }
 
@@ -1255,7 +1255,7 @@ function App() {
       }
       await loadFees(selectedFeeMonthId)
     } catch (cause) {
-      setError(getDeleteErrorMessage(cause, "吏異??댁뿭????젣?섏? 紐삵뻽?듬땲??"))
+      setError(getDeleteErrorMessage(cause, "지출 내역을 삭제하지 못했습니다."))
     }
   }
 
@@ -1748,6 +1748,10 @@ function getResultValidationIssues(gameDay: GameDay | undefined, results: GameRe
   }
 
   return issues
+}
+
+function hasBlockingValidationIssue(issues: TeamValidationIssue[]) {
+  return issues.some((issue) => issue.tone === "danger")
 }
 
 function readAuthSession(): AuthSession | null {
