@@ -103,6 +103,12 @@ import {
 type View = "dashboard" | "members" | "games" | "attendance" | "notices" | "fees" | "stats"
 type GameOperationView = "teams" | "results"
 type AuthMode = "member" | "guest"
+type AppHistoryState = {
+  rebornApp: true
+  view: View
+  gameOperationModal: GameOperationView | null
+  selectedGameDayId: number
+}
 type AuthSession = {
   mode: AuthMode
   name: string
@@ -271,6 +277,51 @@ function App() {
     localStorage.removeItem(authStorageKey)
     setAuthSession(null)
     setView("dashboard")
+  }
+
+  function makeHistoryState(
+    nextView: View,
+    nextGameOperationModal: GameOperationView | null = null,
+    nextSelectedGameDayId = selectedGameDayId,
+  ): AppHistoryState {
+    return {
+      rebornApp: true,
+      view: nextView,
+      gameOperationModal: nextGameOperationModal,
+      selectedGameDayId: nextSelectedGameDayId,
+    }
+  }
+
+  function replaceAppHistory(
+    nextView: View,
+    nextGameOperationModal: GameOperationView | null = null,
+    nextSelectedGameDayId = selectedGameDayId,
+  ) {
+    window.history.replaceState(makeHistoryState(nextView, nextGameOperationModal, nextSelectedGameDayId), "", window.location.pathname)
+  }
+
+  function pushAppHistory(
+    nextView: View,
+    nextGameOperationModal: GameOperationView | null = null,
+    nextSelectedGameDayId = selectedGameDayId,
+  ) {
+    const currentState = window.history.state as Partial<AppHistoryState> | null
+    if (
+      currentState?.rebornApp &&
+      currentState.view === nextView &&
+      currentState.gameOperationModal === nextGameOperationModal &&
+      currentState.selectedGameDayId === nextSelectedGameDayId
+    ) {
+      return
+    }
+
+    window.history.pushState(makeHistoryState(nextView, nextGameOperationModal, nextSelectedGameDayId), "", window.location.pathname)
+  }
+
+  function navigateToView(nextView: View) {
+    setGameOperationModal(null)
+    setView(nextView)
+    pushAppHistory(nextView, null)
   }
 
   function requireWriteAccess() {
@@ -573,7 +624,7 @@ function App() {
     }
 
     startEditGameDay(selectedGameDay)
-    setView("games")
+    navigateToView("games")
   }
 
   function cancelEditGameDay() {
@@ -697,16 +748,18 @@ function App() {
     }
     setGameOperationModal("results")
     setView("games")
+    pushAppHistory("games", "results", gameDayId || selectedGameDayId)
   }
 
   function openDashboardNotices() {
-    setView("notices")
+    navigateToView("notices")
   }
 
   async function openGameOperation(gameDayId: number, operationView: GameOperationView) {
     await loadAttendance(gameDayId)
     setGameOperationModal(operationView)
     setView("games")
+    pushAppHistory("games", operationView, gameDayId)
   }
 
   function closeGameOperationModal() {
@@ -743,7 +796,14 @@ function App() {
     }
 
     cancelEditResult()
+    const currentState = window.history.state as Partial<AppHistoryState> | null
+    if (currentState?.rebornApp && currentState.gameOperationModal) {
+      window.history.back()
+      return
+    }
+
     setGameOperationModal(null)
+    replaceAppHistory(view, null)
   }
 
   function confirmTeamValidationAction() {
@@ -752,7 +812,14 @@ function App() {
 
     if (action === "close") {
       cancelEditResult()
+      const currentState = window.history.state as Partial<AppHistoryState> | null
+      if (currentState?.rebornApp && currentState.gameOperationModal) {
+        window.history.back()
+        return
+      }
+
       setGameOperationModal(null)
+      replaceAppHistory(view, null)
     }
   }
 
@@ -1414,6 +1481,35 @@ function App() {
     void loadAll()
   }, [authSession])
 
+  useEffect(() => {
+    if (!authSession || (authSession.mode === "member" && !authSession.linked)) {
+      return
+    }
+
+    const currentState = window.history.state as Partial<AppHistoryState> | null
+    if (!currentState?.rebornApp) {
+      replaceAppHistory(view, gameOperationModal, selectedGameDayId)
+    }
+
+    function handlePopState(event: PopStateEvent) {
+      const state = event.state as Partial<AppHistoryState> | null
+      if (!state?.rebornApp || !state.view) {
+        setGameOperationModal(null)
+        setView("dashboard")
+        return
+      }
+
+      setView(state.view)
+      setGameOperationModal(state.gameOperationModal ?? null)
+      if (state.selectedGameDayId) {
+        void loadAttendance(state.selectedGameDayId)
+      }
+    }
+
+    window.addEventListener("popstate", handlePopState)
+    return () => window.removeEventListener("popstate", handlePopState)
+  }, [authSession, gameOperationModal, selectedGameDayId, view])
+
   if (!authSession) {
     return (
       <>
@@ -1453,7 +1549,7 @@ function App() {
             className="group flex w-fit items-center gap-3 text-left outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring"
             type="button"
             aria-label="메인 화면으로 이동"
-            onClick={() => setView("dashboard")}
+            onClick={() => navigateToView("dashboard")}
           >
             <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-900 bg-zinc-950 shadow-sm shadow-slate-900/10 transition-transform group-hover:-translate-y-0.5">
               <span className="absolute h-9 w-9 rounded-full border-[3px] border-white/90" />
@@ -1471,19 +1567,19 @@ function App() {
           </button>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end">
             <nav className="grid grid-cols-2 gap-1.5 rounded-xl border border-border bg-secondary/70 p-1.5 shadow-sm shadow-slate-900/5 sm:grid-cols-5">
-              <TabButton active={view === "dashboard"} icon={LayoutDashboard} onClick={() => setView("dashboard")}>
+              <TabButton active={view === "dashboard"} icon={LayoutDashboard} onClick={() => navigateToView("dashboard")}>
                 대시보드
               </TabButton>
-              <TabButton active={view === "members"} icon={UsersRound} onClick={() => setView("members")}>
+              <TabButton active={view === "members"} icon={UsersRound} onClick={() => navigateToView("members")}>
                 회원
               </TabButton>
-              <TabButton active={view === "games"} icon={Trophy} onClick={() => setView("games")}>
+              <TabButton active={view === "games"} icon={Trophy} onClick={() => navigateToView("games")}>
                 게임기록
               </TabButton>
-              <TabButton active={view === "notices"} icon={MessageSquareText} onClick={() => setView("notices")}>
+              <TabButton active={view === "notices"} icon={MessageSquareText} onClick={() => navigateToView("notices")}>
                 게시판
               </TabButton>
-              <TabButton active={view === "stats"} icon={BarChart3} onClick={() => setView("stats")}>
+              <TabButton active={view === "stats"} icon={BarChart3} onClick={() => navigateToView("stats")}>
                 통계
               </TabButton>
             </nav>
@@ -1509,10 +1605,10 @@ function App() {
             currentMemberVote={dashboardAttendanceVotes.find(
               (vote) => vote.gameDayId === dashboard?.nextGameDay?.id && vote.memberId === authSession.memberId,
             )}
-            onOpenMembers={() => setView("members")}
+            onOpenMembers={() => navigateToView("members")}
             onOpenResults={() => void openDashboardResults()}
             onOpenNotices={openDashboardNotices}
-            onOpenStats={() => setView("stats")}
+            onOpenStats={() => navigateToView("stats")}
             onOpenTeams={() => {
               const gameDayId = dashboard?.nextGameDay?.id
               if (gameDayId) {
