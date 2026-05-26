@@ -332,6 +332,10 @@ function App() {
     pushAppHistory(nextView, null)
   }
 
+  function reloadDashboard() {
+    window.location.href = window.location.pathname
+  }
+
   function showToast(message: string) {
     if (toastTimerRef.current) {
       window.clearTimeout(toastTimerRef.current)
@@ -1632,7 +1636,7 @@ function App() {
             className="group flex w-fit items-center gap-3 text-left outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring"
             type="button"
             aria-label="메인 화면으로 이동"
-            onClick={() => navigateToView("dashboard")}
+            onClick={reloadDashboard}
           >
             <img
               className="h-12 w-12 shrink-0 rounded-lg shadow-sm shadow-slate-900/10 transition-transform group-hover:-translate-y-0.5"
