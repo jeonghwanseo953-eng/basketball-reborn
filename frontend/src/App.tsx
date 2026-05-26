@@ -671,7 +671,6 @@ function App() {
       }
     }
 
-    cancelEditTeam()
     cancelEditResult()
     setGameOperationModal(null)
   }
@@ -681,7 +680,6 @@ function App() {
     setTeamValidationConfirm(null)
 
     if (action === "close") {
-      cancelEditTeam()
       cancelEditResult()
       setGameOperationModal(null)
     }
@@ -917,7 +915,6 @@ function App() {
       await Promise.all(teams.map((team) => deleteTeam(team.id)))
       setTeams([])
       setGameDays(await getGameDays())
-      cancelEditTeam()
     } catch (cause) {
       setError(getDeleteErrorMessage(cause, "팀 배정을 초기화하지 못했습니다."))
     } finally {
