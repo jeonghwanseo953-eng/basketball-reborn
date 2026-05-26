@@ -1,12 +1,16 @@
 package com.seo.reborn.gameday.domain;
 
+import com.seo.reborn.member.domain.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -49,6 +53,10 @@ public class GameDay {
 	@Column(length = 500)
 	private String memo;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "team_builder_member_id")
+	private Member teamBuilder;
+
 	@Column(nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
@@ -59,7 +67,7 @@ public class GameDay {
 	}
 
 	private GameDay(LocalDate gameDate, String place, LocalTime startTime, LocalTime endTime,
-		GameDayMode mode, GameDayType gameType, GameDayStatus status, String memo) {
+		GameDayMode mode, GameDayType gameType, GameDayStatus status, String memo, Member teamBuilder) {
 		this.gameDate = gameDate;
 		this.place = place;
 		this.startTime = startTime;
@@ -68,19 +76,21 @@ public class GameDay {
 		this.gameType = gameType;
 		this.status = status;
 		this.memo = memo;
+		this.teamBuilder = teamBuilder;
 	}
 
 	public static GameDay create(LocalDate gameDate, String place, LocalTime startTime, LocalTime endTime,
-		GameDayMode mode, GameDayType gameType, GameDayStatus status, String memo) {
+		GameDayMode mode, GameDayType gameType, GameDayStatus status, String memo, Member teamBuilder) {
 		return new GameDay(gameDate, place, startTime, endTime,
 			mode == null ? GameDayMode.THREE_WAY : mode,
 			gameType == null ? GameDayType.REGULAR : gameType,
 			status == null ? GameDayStatus.SCHEDULED : status,
-			memo);
+			memo,
+			teamBuilder);
 	}
 
 	public void update(LocalDate gameDate, String place, LocalTime startTime, LocalTime endTime,
-		GameDayMode mode, GameDayType gameType, GameDayStatus status, String memo) {
+		GameDayMode mode, GameDayType gameType, GameDayStatus status, String memo, Member teamBuilder) {
 		this.gameDate = gameDate;
 		this.place = place;
 		this.startTime = startTime;
@@ -89,6 +99,7 @@ public class GameDay {
 		this.gameType = gameType == null ? GameDayType.REGULAR : gameType;
 		this.status = status == null ? GameDayStatus.SCHEDULED : status;
 		this.memo = memo;
+		this.teamBuilder = teamBuilder;
 	}
 
 	@PrePersist
@@ -137,6 +148,10 @@ public class GameDay {
 
 	public String getMemo() {
 		return memo;
+	}
+
+	public Member getTeamBuilder() {
+		return teamBuilder;
 	}
 
 	public LocalDateTime getCreatedAt() {

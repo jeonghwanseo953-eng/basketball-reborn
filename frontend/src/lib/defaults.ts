@@ -33,6 +33,7 @@ export const emptyGameForm: GameDayRequest = {
   gameType: "REGULAR",
   status: "SCHEDULED",
   memo: "",
+  teamBuilderMemberId: null,
 }
 
 export const emptyAttendanceForm: AttendanceVoteRequest = {

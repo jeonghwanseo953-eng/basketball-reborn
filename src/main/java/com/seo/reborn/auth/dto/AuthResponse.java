@@ -2,6 +2,7 @@ package com.seo.reborn.auth.dto;
 
 import com.seo.reborn.auth.domain.KakaoAccount;
 import com.seo.reborn.member.domain.Member;
+import com.seo.reborn.member.domain.MemberRole;
 
 public record AuthResponse(
 	String token,
@@ -9,6 +10,7 @@ public record AuthResponse(
 	String nickname,
 	Long memberId,
 	String memberName,
+	MemberRole memberRole,
 	boolean linked
 ) {
 
@@ -20,6 +22,7 @@ public record AuthResponse(
 			account.getNickname(),
 			member == null ? null : member.getId(),
 			member == null ? null : member.getName(),
+			member == null ? null : member.getRole(),
 			member != null
 		);
 	}

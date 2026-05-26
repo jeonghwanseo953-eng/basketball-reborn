@@ -4,6 +4,8 @@ import com.seo.reborn.gameday.domain.GameDay;
 import com.seo.reborn.gameday.dto.GameDayRequest;
 import com.seo.reborn.gameday.dto.GameDayResponse;
 import com.seo.reborn.gameday.repository.GameDayRepository;
+import com.seo.reborn.member.domain.Member;
+import com.seo.reborn.member.repository.MemberRepository;
 import com.seo.reborn.team.repository.TeamRepository;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -17,10 +19,13 @@ public class GameDayService {
 
 	private final GameDayRepository gameDayRepository;
 	private final TeamRepository teamRepository;
+	private final MemberRepository memberRepository;
 
-	public GameDayService(GameDayRepository gameDayRepository, TeamRepository teamRepository) {
+	public GameDayService(GameDayRepository gameDayRepository, TeamRepository teamRepository,
+		MemberRepository memberRepository) {
 		this.gameDayRepository = gameDayRepository;
 		this.teamRepository = teamRepository;
+		this.memberRepository = memberRepository;
 	}
 
 	public List<GameDayResponse> findAll() {
@@ -35,6 +40,7 @@ public class GameDayService {
 
 	@Transactional
 	public GameDayResponse create(GameDayRequest request) {
+		Member teamBuilder = getMemberOrNull(request.teamBuilderMemberId());
 		GameDay gameDay = GameDay.create(
 			request.gameDate(),
 			request.place(),
@@ -43,7 +49,8 @@ public class GameDayService {
 			request.mode(),
 			request.gameType(),
 			request.status(),
-			request.memo()
+			request.memo(),
+			teamBuilder
 		);
 
 		return toResponse(gameDayRepository.save(gameDay));
@@ -52,6 +59,7 @@ public class GameDayService {
 	@Transactional
 	public GameDayResponse update(Long id, GameDayRequest request) {
 		GameDay gameDay = getGameDay(id);
+		Member teamBuilder = getMemberOrNull(request.teamBuilderMemberId());
 		gameDay.update(
 			request.gameDate(),
 			request.place(),
@@ -60,7 +68,8 @@ public class GameDayService {
 			request.mode(),
 			request.gameType(),
 			request.status(),
-			request.memo()
+			request.memo(),
+			teamBuilder
 		);
 
 		return toResponse(gameDay);
@@ -78,6 +87,15 @@ public class GameDayService {
 	private GameDay getGameDay(Long id) {
 		return gameDayRepository.findById(id)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "GameDay not found: " + id));
+	}
+
+	private Member getMemberOrNull(Long id) {
+		if (id == null) {
+			return null;
+		}
+
+		return memberRepository.findById(id)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Member not found: " + id));
 	}
 
 	private GameDayResponse toResponse(GameDay gameDay) {

@@ -38,6 +38,7 @@ export interface AuthResponse {
   nickname: string
   memberId: number | null
   memberName: string | null
+  memberRole: MemberRole | null
   linked: boolean
 }
 
@@ -64,6 +65,8 @@ export interface GameDay {
   status: GameDayStatus
   teamCount: number
   memo: string | null
+  teamBuilderMemberId: number | null
+  teamBuilderName: string | null
 }
 
 export interface GameDayRequest {
@@ -75,6 +78,7 @@ export interface GameDayRequest {
   gameType: GameDayType
   status: GameDayStatus
   memo: string
+  teamBuilderMemberId: number | null
 }
 
 export interface AttendanceSummary {

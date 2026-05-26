@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getGameResults } from "@/lib/api"
 import { gameStatusLabels, gameTypeLabels, modeLabels, teamLabels } from "@/lib/labels"
-import type { GameDay, GameDayMode, GameDayRequest, GameDayStatus, GameDayType, GameResult, TeamName } from "@/types/api"
+import type { GameDay, GameDayMode, GameDayRequest, GameDayStatus, GameDayType, GameResult, Member, TeamName } from "@/types/api"
 
 type GameDaySortKey = "gameDate" | "mode" | "gameType" | "status" | "place"
 type SortDirection = "asc" | "desc"
@@ -37,6 +37,7 @@ const editableStatusLabels: Record<Exclude<StatusFilter, "ALL">, string> = {
 
 export function GamesView({
   gameDays,
+  members,
   currentGameDayId,
   currentResults,
   form,
@@ -52,6 +53,7 @@ export function GamesView({
   readOnly = false,
 }: {
   gameDays: GameDay[]
+  members: Member[]
   currentGameDayId: number
   currentResults: GameResult[]
   form: GameDayRequest
@@ -110,6 +112,16 @@ export function GamesView({
   }, [activeGameDays, query, statusFilter, modeFilter, typeFilter, sortDirection, sortKey])
 
   const groupedGameDays = useMemo(() => groupGameDaysByMonth(displayedGameDays), [displayedGameDays])
+  const teamBuilderOptions = useMemo(() => {
+    const options: Record<string, string> = { "": "미지정" }
+    members
+      .filter((member) => member.status === "REGULAR")
+      .sort((left, right) => left.name.localeCompare(right.name, "ko-KR"))
+      .forEach((member) => {
+        options[String(member.id)] = member.name
+      })
+    return options
+  }, [members])
 
   useEffect(() => {
     if (editing) {
@@ -201,6 +213,7 @@ export function GamesView({
         <GameDayFormModal
           editing={editing}
           form={form}
+          teamBuilderOptions={teamBuilderOptions}
           saving={saving}
           onChange={onChange}
           onClose={closeForm}
@@ -377,6 +390,7 @@ export function GamesView({
 function GameDayFormModal({
   editing,
   form,
+  teamBuilderOptions,
   saving,
   onChange,
   onClose,
@@ -384,6 +398,7 @@ function GameDayFormModal({
 }: {
   editing: boolean
   form: GameDayRequest
+  teamBuilderOptions: Record<string, string>
   saving: boolean
   onChange: (value: GameDayRequest) => void
   onClose: () => void
@@ -435,6 +450,14 @@ function GameDayFormModal({
                   value={form.status === "CLOSED" ? "COMPLETED" : form.status}
                   options={editableStatusLabels}
                   onChange={(status) => onChange({ ...form, status: status as GameDayStatus })}
+                />
+              </div>
+              <div className="mt-3">
+                <SelectInput
+                  label="팀 구성 담당자"
+                  value={form.teamBuilderMemberId ? String(form.teamBuilderMemberId) : ""}
+                  options={teamBuilderOptions}
+                  onChange={(teamBuilderMemberId) => onChange({ ...form, teamBuilderMemberId: teamBuilderMemberId ? Number(teamBuilderMemberId) : null })}
                 />
               </div>
             </FormSection>
@@ -512,6 +535,13 @@ function GameDayDetailModal({
 
         <CardContent className="space-y-4 p-4">
           <div className="grid gap-2 sm:grid-cols-2">
+            <section className="rounded-md border border-border bg-secondary/20 p-3 sm:col-span-2">
+              <h3 className="mb-1 flex items-center gap-2 text-sm font-black">
+                <UsersRound className="h-4 w-4 text-accent" />
+                팀 구성 담당자
+              </h3>
+              <p className="text-sm font-semibold text-muted-foreground">{gameDay.teamBuilderName ?? "미지정"}</p>
+            </section>
             <Button type="button" className="h-11 border border-sky-500/40 bg-sky-500/15 text-sky-700 hover:bg-sky-500/25" onClick={() => onOpenTeams(gameDay)}>
               <UsersRound className="h-4 w-4" />
               {readOnly ? "팀 보기" : "팀 구성"}

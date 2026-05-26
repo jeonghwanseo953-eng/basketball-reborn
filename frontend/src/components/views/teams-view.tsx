@@ -226,10 +226,27 @@ export function TeamsView({
               <Shield className="h-5 w-5 text-accent" />
               경기별 팀 구성
             </CardTitle>
-            {saving ? <Badge className="border-accent/40 bg-accent/10 text-accent">저장 중</Badge> : null}
+            <div className="flex flex-wrap items-center justify-end gap-1.5">
+              {readOnly ? <Badge className="border-amber-500/35 bg-amber-500/10 text-amber-700">조회 전용</Badge> : null}
+              {saving ? <Badge className="border-accent/40 bg-accent/10 text-accent">저장 중</Badge> : null}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-3 px-0 pb-0">
+          <section className="rounded-md border border-border bg-secondary/25 p-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground">팀 구성 담당자</p>
+                <p className="mt-1 text-base font-black">{selectedGameDay?.teamBuilderName ?? "미지정"}</p>
+              </div>
+              {readOnly ? (
+                <p className="text-sm font-semibold text-muted-foreground">
+                  담당자, 회장, 웹관리자만 팀 구성을 수정할 수 있습니다.
+                </p>
+              ) : null}
+            </div>
+          </section>
+
           {!readOnly && validationIssues.length ? (
             <section className="grid gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
               {validationIssues.map((issue) => (

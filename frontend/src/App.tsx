@@ -69,6 +69,7 @@ import type {
   GameResultRequest,
   Member,
   MemberRequest,
+  MemberRole,
   MemberStatistics,
   Notice,
   NoticeRequest,
@@ -108,6 +109,7 @@ type AuthSession = {
   token?: string
   memberId?: number | null
   memberName?: string | null
+  memberRole?: MemberRole | null
   linked?: boolean
 }
 const defaultStatisticsFilter: StatisticsFilter = { scope: "RECENT" }
@@ -179,6 +181,8 @@ function App() {
   const [savingFee, setSavingFee] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const readOnly = authSession?.mode === "guest"
+  const currentMemberRole = authSession?.memberRole ?? "NONE"
+  const canManageEverything = currentMemberRole === "WEB_ADMIN" || currentMemberRole === "PRESIDENT"
   const busyMessage = getBusyMessage({
     loading,
     savingMember,
@@ -208,6 +212,7 @@ function App() {
       token: response.token,
       memberId: response.memberId,
       memberName: response.memberName,
+      memberRole: response.memberRole,
       linked: response.linked,
     }
   }
@@ -270,6 +275,32 @@ function App() {
     }
 
     setError("비회원은 조회만 가능합니다. 카카오 로그인 후 이용해주세요.")
+    return false
+  }
+
+  function canEditTeamsForGameDay(gameDayId: number) {
+    if (readOnly || !gameDayId) {
+      return false
+    }
+
+    if (canManageEverything) {
+      return true
+    }
+
+    const selectedGameDay = gameDays.find((gameDay) => gameDay.id === gameDayId)
+    return Boolean(authSession?.memberId && selectedGameDay?.teamBuilderMemberId === authSession.memberId)
+  }
+
+  function canEditSelectedGameDayTeams() {
+    return canEditTeamsForGameDay(selectedGameDayId)
+  }
+
+  function requireTeamBuilderAccess() {
+    if (canEditSelectedGameDayTeams()) {
+      return true
+    }
+
+    setError("팀 구성 담당자만 팀 구성을 수정할 수 있습니다.")
     return false
   }
 
@@ -398,7 +429,7 @@ function App() {
   }
 
   async function createGuestMember(payload: MemberRequest) {
-    if (!requireWriteAccess()) return null
+    if (!requireWriteAccess() || !requireTeamBuilderAccess()) return null
     setSavingTeam(true)
     setError(null)
 
@@ -526,6 +557,7 @@ function App() {
       gameType: gameDay.gameType || "REGULAR",
       status: gameDay.status,
       memo: gameDay.memo ?? "",
+      teamBuilderMemberId: gameDay.teamBuilderMemberId ?? null,
     })
   }
 
@@ -592,7 +624,7 @@ function App() {
   }
 
   async function deleteGuestFromTeamBuilder(member: Member) {
-    if (!requireWriteAccess()) return false
+    if (!requireWriteAccess() || !requireTeamBuilderAccess()) return false
     if (member.status !== "GUEST") {
       setError("게스트만 팀 구성 화면에서 삭제할 수 있습니다.")
       return false
@@ -674,7 +706,7 @@ function App() {
   }
 
   function closeGameOperationModal() {
-    if (gameOperationModal === "teams") {
+    if (gameOperationModal === "teams" && canEditSelectedGameDayTeams()) {
       const gameDay = gameDays.find((currentGameDay) => currentGameDay.id === selectedGameDayId)
       const validationIssues = getTeamValidationIssues(gameDay, teams, members)
 
@@ -857,7 +889,7 @@ function App() {
   }
 
   async function moveTeamMember(memberId: number, targetTeamName: TeamName | null) {
-    if (!requireWriteAccess()) return
+    if (!requireWriteAccess() || !requireTeamBuilderAccess()) return
     const member = members.find((currentMember) => currentMember.id === memberId)
 
     if (!member || !selectedGameDayId) {
@@ -938,7 +970,7 @@ function App() {
   }
 
   async function resetTeamsToPool() {
-    if (!requireWriteAccess()) return
+    if (!requireWriteAccess() || !requireTeamBuilderAccess()) return
     if (!teams.length) {
       return
     }
@@ -1503,6 +1535,7 @@ function App() {
         {view === "games" ? (
           <GamesView
             gameDays={gameDays}
+            members={members}
             currentGameDayId={selectedGameDayId}
             currentResults={gameResults}
             form={gameForm}
@@ -1551,7 +1584,7 @@ function App() {
                 onCreateGuest={createGuestMember}
                 onDeleteGuest={deleteGuestFromTeamBuilder}
                 onResetTeams={() => void resetTeamsToPool()}
-                readOnly={readOnly}
+                readOnly={!canEditSelectedGameDayTeams()}
               />
             ) : null}
 
@@ -1809,6 +1842,7 @@ function readAuthSession(): AuthSession | null {
         token: session.token,
         memberId: session.memberId,
         memberName: session.memberName,
+        memberRole: session.memberRole,
         linked: session.linked,
       }
     }

@@ -30,6 +30,8 @@ public record GameDayRequest(
 	GameDayStatus status,
 
 	@Size(max = 500)
-	String memo
+	String memo,
+
+	Long teamBuilderMemberId
 ) {
 }
