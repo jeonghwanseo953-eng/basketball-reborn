@@ -20,9 +20,9 @@ import { EmptyState, SelectInput, SkeletonRows, TextArea, TextInput } from "@/co
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { getGameResults } from "@/lib/api"
-import { gameStatusLabels, gameTypeLabels, modeLabels, teamLabels } from "@/lib/labels"
-import type { GameDay, GameDayMode, GameDayRequest, GameDayStatus, GameDayType, GameResult, Member, TeamName } from "@/types/api"
+import { getAttendanceVotes, getGameResults } from "@/lib/api"
+import { attendanceStatusLabels, gameStatusLabels, gameTypeLabels, modeLabels, teamLabels } from "@/lib/labels"
+import type { AttendanceStatus, AttendanceVote, GameDay, GameDayMode, GameDayRequest, GameDayStatus, GameDayType, GameResult, Member, TeamName } from "@/types/api"
 
 type GameDaySortKey = "gameDate" | "mode" | "gameType" | "status" | "place"
 type SortDirection = "asc" | "desc"
@@ -75,7 +75,9 @@ export function GamesView({
   const [formOpen, setFormOpen] = useState(false)
   const [selectedGameDay, setSelectedGameDay] = useState<GameDay | null>(null)
   const [detailResults, setDetailResults] = useState<GameResult[]>([])
+  const [detailVotes, setDetailVotes] = useState<AttendanceVote[]>([])
   const [detailResultsLoading, setDetailResultsLoading] = useState(false)
+  const [detailVotesLoading, setDetailVotesLoading] = useState(false)
   const [wasSaving, setWasSaving] = useState(false)
   const [query, setQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL")
@@ -153,18 +155,25 @@ export function GamesView({
   async function openGameDayDetail(gameDay: GameDay) {
     setSelectedGameDay(gameDay)
     setDetailResults([])
+    setDetailVotes([])
 
-    if (!canRecordResults(gameDay)) {
-      return
+    setDetailVotesLoading(true)
+    if (canRecordResults(gameDay)) {
+      setDetailResultsLoading(true)
     }
-
-    setDetailResultsLoading(true)
     try {
-      setDetailResults(await getGameResults(gameDay.id))
+      const [votes, results] = await Promise.all([
+        getAttendanceVotes(gameDay.id),
+        canRecordResults(gameDay) ? getGameResults(gameDay.id) : Promise.resolve([]),
+      ])
+      setDetailVotes(votes)
+      setDetailResults(results)
     } catch {
+      setDetailVotes([])
       setDetailResults([])
     } finally {
       setDetailResultsLoading(false)
+      setDetailVotesLoading(false)
     }
   }
 
@@ -227,7 +236,9 @@ export function GamesView({
         <GameDayDetailModal
           gameDay={selectedGameDay}
           results={selectedGameDay.id === currentGameDayId ? currentResults : detailResults}
+          votes={detailVotes}
           resultsLoading={detailResultsLoading}
+          votesLoading={detailVotesLoading}
           onClose={() => setSelectedGameDay(null)}
           onEdit={editGameDay}
           onOpenResults={openResultsFromDetail}
@@ -488,7 +499,9 @@ function GameDayFormModal({
 function GameDayDetailModal({
   gameDay,
   results,
+  votes,
   resultsLoading,
+  votesLoading,
   onClose,
   onEdit,
   onOpenResults,
@@ -498,7 +511,9 @@ function GameDayDetailModal({
 }: {
   gameDay: GameDay
   results: GameResult[]
+  votes: AttendanceVote[]
   resultsLoading: boolean
+  votesLoading: boolean
   onClose: () => void
   onEdit: (gameDay: GameDay) => void
   onOpenResults: (gameDay: GameDay) => void
@@ -507,6 +522,7 @@ function GameDayDetailModal({
   readOnly?: boolean
 }) {
   const resultSummary = getResultSummary(gameDay, results)
+  const voteSummary = summarizeVotes(votes)
 
   return (
     <div className="modal-overlay fixed inset-0 z-50 flex items-start justify-center bg-background/80 px-4 py-6 backdrop-blur-sm sm:items-center">
@@ -571,6 +587,43 @@ function GameDayDetailModal({
               <p className="whitespace-pre-wrap text-sm text-muted-foreground">{gameDay.memo}</p>
             </section>
           ) : null}
+
+          <section className="rounded-md border border-border bg-secondary/20 p-3">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h3 className="flex items-center gap-2 text-sm font-black">
+                <ClipboardList className="h-4 w-4 text-accent" />
+                당시 투표내역
+              </h3>
+              {votesLoading ? <span className="text-xs font-black text-muted-foreground">확인 중</span> : <span className="text-xs font-black text-muted-foreground">{votes.length}명</span>}
+            </div>
+            {votesLoading ? (
+              <p className="text-sm font-semibold text-muted-foreground">투표내역 확인 중</p>
+            ) : votes.length ? (
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  {(["ATTENDING", "ABSENT", "UNDECIDED"] as AttendanceStatus[]).map((status) => (
+                    <div key={status} className="rounded-md border border-border bg-background px-3 py-2 text-center">
+                      <p className="text-[11px] font-black text-muted-foreground">{attendanceStatusLabels[status]}</p>
+                      <p className="mt-1 text-lg font-black text-foreground">{voteSummary[status]}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid gap-2">
+                  {votes.map((vote) => (
+                    <div key={vote.id} className="flex items-center justify-between gap-3 rounded-md border border-border bg-background px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-black text-foreground">{vote.voterName}</p>
+                        {vote.memo ? <p className="mt-0.5 truncate text-xs font-semibold text-muted-foreground">{vote.memo}</p> : null}
+                      </div>
+                      <Badge className={attendanceStatusTone(vote.status)}>{attendanceStatusLabels[vote.status]}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm font-semibold text-muted-foreground">등록된 투표내역이 없습니다.</p>
+            )}
+          </section>
 
           {resultsLoading ? (
             <section className="rounded-md border border-border bg-secondary/20 p-3">
@@ -731,6 +784,24 @@ function resultTeamLabelTone(team: TeamName) {
     WHITE: "border-zinc-300 bg-white text-zinc-900",
     RED: "border-red-700 bg-red-600 text-white",
   }[team]
+}
+
+function attendanceStatusTone(status: AttendanceStatus) {
+  return {
+    ATTENDING: "border-sky-500/40 bg-sky-500/10 text-sky-700",
+    ABSENT: "border-red-500/40 bg-red-500/10 text-red-700",
+    UNDECIDED: "border-slate-400/50 bg-slate-500/10 text-slate-600",
+  }[status]
+}
+
+function summarizeVotes(votes: AttendanceVote[]) {
+  return votes.reduce(
+    (acc, vote) => {
+      acc[vote.status] += 1
+      return acc
+    },
+    { ATTENDING: 0, ABSENT: 0, UNDECIDED: 0 } as Record<AttendanceStatus, number>,
+  )
 }
 
 function formatGameDate(value: string) {
