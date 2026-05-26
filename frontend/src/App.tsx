@@ -179,6 +179,7 @@ function App() {
   const [selectedGameDayId, setSelectedGameDayId] = useState<number>(0)
   const [selectedFeeMonthId, setSelectedFeeMonthId] = useState<number>(0)
   const [selectedStatMemberId, setSelectedStatMemberId] = useState<number>(0)
+  const [dashboardNoticeId, setDashboardNoticeId] = useState<number | null>(null)
   const [combinationMemberIds, setCombinationMemberIds] = useState<number[]>([])
   const [statisticsFilter, setStatisticsFilter] = useState<StatisticsFilter>(defaultStatisticsFilter)
   const [loading, setLoading] = useState(true)
@@ -776,6 +777,12 @@ function App() {
   }
 
   function openDashboardNotices() {
+    setDashboardNoticeId(null)
+    navigateToView("notices")
+  }
+
+  function openDashboardNotice(notice: Notice) {
+    setDashboardNoticeId(notice.id)
     navigateToView("notices")
   }
 
@@ -1655,6 +1662,7 @@ function App() {
             onOpenMembers={() => navigateToView("members")}
             onOpenResults={() => void openDashboardResults()}
             onOpenNotices={openDashboardNotices}
+            onOpenNotice={openDashboardNotice}
             onOpenStats={() => navigateToView("stats")}
             onOpenTeams={() => {
               const gameDayId = dashboard?.nextGameDay?.id
@@ -1843,6 +1851,8 @@ function App() {
             editingNoticeId={editingNoticeId}
             loading={loading}
             saving={savingNotice}
+            initialNoticeId={dashboardNoticeId}
+            onInitialNoticeOpened={() => setDashboardNoticeId(null)}
             onChange={setNoticeForm}
             onSubmit={submitNotice}
             onEdit={startEditNotice}

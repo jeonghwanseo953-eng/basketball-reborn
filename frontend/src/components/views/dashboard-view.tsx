@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { attendanceStatusLabels, gameTypeLabels, modeLabels, teamLabels } from "@/lib/labels"
-import type { AttendanceStatus, AttendanceVote, Dashboard, GameResult, Member, MemberStatistics, StatisticsOverview, TeamName } from "@/types/api"
+import type { AttendanceStatus, AttendanceVote, Dashboard, GameResult, Member, MemberStatistics, Notice, StatisticsOverview, TeamName } from "@/types/api"
 
 export function DashboardView({
   dashboard,
@@ -22,6 +22,7 @@ export function DashboardView({
   onOpenResults,
   onOpenStats,
   onOpenTeams,
+  onOpenNotice,
   onVoteAttendance,
   voting,
   readOnly = false,
@@ -39,6 +40,7 @@ export function DashboardView({
   onOpenResults: () => void
   onOpenStats: () => void
   onOpenTeams: () => void
+  onOpenNotice: (notice: Notice) => void
   onVoteAttendance: (memberId: number, status: AttendanceStatus) => void
   voting: boolean
   readOnly?: boolean
@@ -308,14 +310,18 @@ export function DashboardView({
               <SkeletonRows />
             ) : dashboard?.notices.length ? (
               dashboard.notices.slice(0, 4).map((notice) => (
-                <article key={notice.id} className="rounded-md border border-border bg-background px-3 py-2">
+                <button
+                  key={notice.id}
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-left transition-colors hover:border-accent/40 hover:bg-secondary/35"
+                  type="button"
+                  onClick={() => onOpenNotice(notice)}
+                >
                   <div className="flex items-center justify-between gap-3">
                     <h2 className="min-w-0 truncate text-sm font-black text-foreground">{notice.title}</h2>
                     {notice.pinned ? <Badge className="border-accent/40 bg-accent/10 text-accent">공지</Badge> : null}
                   </div>
                   <p className="mt-1 text-xs font-black text-muted-foreground">{formatDashboardNoticeDate(notice.createdAt)}</p>
-                  <p className="mt-2 line-clamp-3 text-sm font-semibold leading-5 text-muted-foreground">{notice.content}</p>
-                </article>
+                </button>
               ))
             ) : (
               <EmptyState title="등록된 게시글이 없습니다." />

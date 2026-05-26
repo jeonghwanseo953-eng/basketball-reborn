@@ -14,6 +14,8 @@ export function NoticesView({
   editingNoticeId,
   loading,
   saving,
+  initialNoticeId,
+  onInitialNoticeOpened,
   onChange,
   onSubmit,
   onEdit,
@@ -26,6 +28,8 @@ export function NoticesView({
   editingNoticeId: number | null
   loading: boolean
   saving: boolean
+  initialNoticeId?: number | null
+  onInitialNoticeOpened?: () => void
   onChange: (value: NoticeRequest) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
   onEdit: (notice: Notice) => void
@@ -70,6 +74,20 @@ export function NoticesView({
     }
     setWasSaving(saving)
   }, [editing, form.title, saving, wasSaving])
+
+  useEffect(() => {
+    if (!initialNoticeId || selectedNotice?.id === initialNoticeId) {
+      return
+    }
+
+    const notice = notices.find((item) => item.id === initialNoticeId)
+    if (!notice) {
+      return
+    }
+
+    void openNotice(notice)
+    onInitialNoticeOpened?.()
+  }, [initialNoticeId, notices, onInitialNoticeOpened, selectedNotice?.id])
 
   function openCreateForm() {
     if (readOnly) return
