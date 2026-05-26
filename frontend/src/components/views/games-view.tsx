@@ -44,6 +44,7 @@ export function GamesView({
   editingGameDayId,
   loading,
   saving,
+  canManageGameDays = false,
   onChange,
   onSubmit,
   onEdit,
@@ -60,6 +61,7 @@ export function GamesView({
   editingGameDayId: number | null
   loading: boolean
   saving: boolean
+  canManageGameDays?: boolean
   onChange: (value: GameDayRequest) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
   onEdit: (gameDay: GameDay) => void
@@ -137,7 +139,7 @@ export function GamesView({
   }, [editing, saving, wasSaving])
 
   function openCreateForm() {
-    if (readOnly) return
+    if (readOnly || !canManageGameDays) return
     onCancelEdit()
     setSelectedGameDay(null)
     setFormOpen(true)
@@ -167,7 +169,7 @@ export function GamesView({
   }
 
   function editGameDay(gameDay: GameDay) {
-    if (readOnly) return
+    if (readOnly || !canManageGameDays) return
     setSelectedGameDay(null)
     onEdit(gameDay)
     setFormOpen(true)
@@ -230,6 +232,7 @@ export function GamesView({
           onEdit={editGameDay}
           onOpenResults={openResultsFromDetail}
           onOpenTeams={openTeamsFromDetail}
+          canManageGameDays={canManageGameDays}
           readOnly={readOnly}
         />
       ) : null}
@@ -243,6 +246,8 @@ export function GamesView({
             </CardTitle>
             {readOnly ? (
               <Badge className="border-amber-500/35 bg-amber-500/10 text-amber-700">조회 전용</Badge>
+            ) : !canManageGameDays ? (
+              <Badge className="border-slate-500/25 bg-slate-500/10 text-muted-foreground">경기 관리 권한 없음</Badge>
             ) : (
               <Button type="button" size="sm" onClick={openCreateForm}>
                 <Plus className="h-4 w-4" />
@@ -490,6 +495,7 @@ function GameDayDetailModal({
   onEdit,
   onOpenResults,
   onOpenTeams,
+  canManageGameDays = false,
   readOnly = false,
 }: {
   gameDay: GameDay
@@ -499,6 +505,7 @@ function GameDayDetailModal({
   onEdit: (gameDay: GameDay) => void
   onOpenResults: (gameDay: GameDay) => void
   onOpenTeams: (gameDay: GameDay) => void
+  canManageGameDays?: boolean
   readOnly?: boolean
 }) {
   const resultSummary = getResultSummary(gameDay, results)
@@ -599,7 +606,7 @@ function GameDayDetailModal({
             </section>
           ) : null}
 
-          {!readOnly ? (
+          {!readOnly && canManageGameDays ? (
             <div className="flex border-t border-border pt-3 sm:justify-end">
               <Button type="button" variant="outline" onClick={() => onEdit(gameDay)}>
                 <Pencil className="h-4 w-4" />

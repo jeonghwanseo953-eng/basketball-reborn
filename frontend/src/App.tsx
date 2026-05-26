@@ -594,6 +594,10 @@ function App() {
   async function submitGame(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!requireWriteAccess()) return
+    if (!canManageEverything) {
+      setError("회장 또는 웹관리자만 경기 일정을 등록/수정할 수 있습니다.")
+      return
+    }
     setSavingGame(true)
     setError(null)
 
@@ -625,6 +629,10 @@ function App() {
 
   function startEditGameDay(gameDay: GameDay) {
     if (!requireWriteAccess()) return
+    if (!canManageEverything) {
+      setError("회장 또는 웹관리자만 경기 일정을 수정할 수 있습니다.")
+      return
+    }
     setEditingGameDayId(gameDay.id)
     setGameForm({
       gameDate: gameDay.gameDate,
@@ -641,6 +649,10 @@ function App() {
 
   function openSelectedGameDayEditor() {
     if (!requireWriteAccess()) return
+    if (!canManageEverything) {
+      setError("회장 또는 웹관리자만 경기 일정을 수정할 수 있습니다.")
+      return
+    }
     const selectedGameDay = gameDays.find((gameDay) => gameDay.id === selectedGameDayId)
     if (!selectedGameDay) {
       return
@@ -1713,6 +1725,7 @@ function App() {
             editingGameDayId={editingGameDayId}
             loading={loading}
             saving={savingGame}
+            canManageGameDays={canManageEverything}
             onChange={setGameForm}
             onSubmit={submitGame}
             onEdit={startEditGameDay}

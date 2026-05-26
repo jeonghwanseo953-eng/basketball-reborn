@@ -34,6 +34,7 @@ public class AuthService {
 	private final RestClient restClient;
 	private final String kakaoRestApiKey;
 	private final boolean devLoginEnabled;
+	private final boolean requireWriteAuth;
 	private final String bootstrapWebAdminName;
 
 	public AuthService(KakaoAccountRepository kakaoAccountRepository,
@@ -42,6 +43,7 @@ public class AuthService {
 		RestClient.Builder restClientBuilder,
 		@Value("${app.kakao.rest-api-key:}") String kakaoRestApiKey,
 		@Value("${app.auth.dev-login-enabled:false}") boolean devLoginEnabled,
+		@Value("${app.auth.require-write-auth:false}") boolean requireWriteAuth,
 		@Value("${app.bootstrap.web-admin-name:}") String bootstrapWebAdminName) {
 		this.kakaoAccountRepository = kakaoAccountRepository;
 		this.authSessionRepository = authSessionRepository;
@@ -49,6 +51,7 @@ public class AuthService {
 		this.restClient = restClientBuilder.build();
 		this.kakaoRestApiKey = kakaoRestApiKey;
 		this.devLoginEnabled = devLoginEnabled;
+		this.requireWriteAuth = requireWriteAuth;
 		this.bootstrapWebAdminName = bootstrapWebAdminName;
 	}
 
@@ -93,6 +96,20 @@ public class AuthService {
 		return authSessionRepository.findByTokenAndExpiresAtAfter(token, LocalDateTime.now())
 			.map(AuthSession::getKakaoAccount)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid auth session"));
+	}
+
+	public void authorizeGameDayManager(String token) {
+		if (!requireWriteAuth) {
+			return;
+		}
+
+		KakaoAccount account = authenticate(token);
+		Member member = account.getMember();
+		MemberRole role = member == null ? MemberRole.NONE : member.getRole();
+
+		if (role != MemberRole.PRESIDENT && role != MemberRole.WEB_ADMIN) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "회장 또는 웹관리자만 경기 일정을 등록/수정할 수 있습니다.");
+		}
 	}
 
 	@Transactional
