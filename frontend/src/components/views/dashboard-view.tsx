@@ -158,29 +158,13 @@ export function DashboardView({
               </div>
               {!readOnly ? (
                 <div className="rounded-md border border-border/80 bg-card/70 p-3 shadow-sm shadow-slate-900/5 lg:grid lg:grid-cols-[auto_minmax(270px,1fr)_auto] lg:items-center lg:gap-3">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:contents">
-                    <div className="flex items-center gap-2 lg:order-1 lg:whitespace-nowrap">
-                      <p className="text-xs font-black text-accent">참석 투표</p>
-                      {currentMemberVote ? (
-                        <span className="rounded-md bg-secondary px-2 py-1 text-[11px] font-black text-muted-foreground">
-                          {attendanceStatusLabels[currentMemberVote.status]}
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:contents">
-                      <Button
-                        className="lg:order-3 lg:h-10"
-                        type="button"
-                        disabled={!canVote || voting}
-                        onClick={() => {
-                          if (currentMemberId) {
-                            onVoteAttendance(currentMemberId, voteStatus)
-                          }
-                        }}
-                      >
-                        {voting ? "저장 중" : currentMemberVote ? "수정" : "투표"}
-                      </Button>
-                    </div>
+                  <div className="flex items-center gap-2 lg:order-1 lg:whitespace-nowrap">
+                    <p className="text-xs font-black text-accent">참석 투표</p>
+                    {currentMemberVote ? (
+                      <span className="rounded-md bg-secondary px-2 py-1 text-[11px] font-black text-muted-foreground">
+                        {attendanceStatusLabels[currentMemberVote.status]}
+                      </span>
+                    ) : null}
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-2 lg:order-2 lg:mt-0">
                     {(["ATTENDING", "ABSENT", "UNDECIDED"] as AttendanceStatus[]).map((status) => (
@@ -199,6 +183,18 @@ export function DashboardView({
                       </button>
                     ))}
                   </div>
+                  <Button
+                    className="mt-3 w-full lg:order-3 lg:mt-0 lg:h-10 lg:w-auto"
+                    type="button"
+                    disabled={!canVote || voting}
+                    onClick={() => {
+                      if (currentMemberId) {
+                        onVoteAttendance(currentMemberId, voteStatus)
+                      }
+                    }}
+                  >
+                    {voting ? "저장 중" : currentMemberVote ? "수정" : "투표"}
+                  </Button>
                 </div>
               ) : null}
             </div>
