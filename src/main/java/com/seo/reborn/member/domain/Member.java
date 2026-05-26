@@ -98,6 +98,10 @@ public class Member {
 		this.profileImageUrl = profileImageUrl;
 	}
 
+	public void assignRole(MemberRole role) {
+		this.role = role == null ? MemberRole.NONE : role;
+	}
+
 	@jakarta.persistence.PrePersist
 	void prePersist() {
 		LocalDateTime now = LocalDateTime.now();

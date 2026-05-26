@@ -21,6 +21,8 @@ server:
   port: ${PORT:${SERVER_PORT:8081}}
 
 app:
+  bootstrap:
+    web-admin-name: ${BOOTSTRAP_WEB_ADMIN_NAME:서정환}
   auth:
     require-write-auth: ${REQUIRE_WRITE_AUTH:false}
     dev-login-enabled: ${DEV_LOGIN_ENABLED:false}
