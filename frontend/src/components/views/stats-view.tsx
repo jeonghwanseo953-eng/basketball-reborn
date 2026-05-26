@@ -83,6 +83,7 @@ export function StatsView({
     () => new Set(members.filter((member) => member.status === "REGULAR" || member.status === "RESTING").map((member) => member.id)),
     [members],
   )
+  const memberById = useMemo(() => new Map(members.map((member) => [member.id, member])), [members])
   const visibleMemberStats = useMemo(
     () => memberStats.filter((stat) => visibleMemberIds.has(stat.memberId)),
     [memberStats, visibleMemberIds],
@@ -240,6 +241,7 @@ export function StatsView({
       {activeTab === "overview" ? (
         <OverviewSection
           bestDefenses={bestDefenses}
+          memberById={memberById}
           topPlayedStats={topPlayedStats}
           topScorers={topScorers}
           topWinRates={topWinRates}
@@ -251,6 +253,7 @@ export function StatsView({
       {activeTab === "ranking" ? (
         <RankingCard
           loading={loading}
+          memberById={memberById}
           query={query}
           rankedStats={rankedStats}
           selectedMemberId={selectedMemberId}
@@ -263,6 +266,7 @@ export function StatsView({
 
       {activeTab === "detail" ? (
         <MemberDetailCard
+          member={selectedMemberStat ? memberById.get(selectedMemberStat.memberId) ?? null : null}
           stat={selectedMemberStat}
           statisticsFilter={statisticsFilter}
           onBack={() => setActiveTab("ranking")}
@@ -289,6 +293,7 @@ export function StatsView({
 
 function OverviewSection({
   bestDefenses,
+  memberById,
   topPlayedStats,
   topScorers,
   topWinRates,
@@ -296,6 +301,7 @@ function OverviewSection({
   onSelectMember,
 }: {
   bestDefenses: MemberStatistics[]
+  memberById: Map<number, Member>
   topPlayedStats: MemberStatistics[]
   topScorers: MemberStatistics[]
   topWinRates: MemberStatistics[]
@@ -345,6 +351,7 @@ function OverviewSection({
             key={label}
             icon={Icon}
             label={label}
+            memberById={memberById}
             stats={stats}
             getDescription={getDescription}
             getValue={getValue}
@@ -416,6 +423,7 @@ function OverviewSection({
 function LeaderTopThreeCard({
   icon: Icon,
   label,
+  memberById,
   stats,
   getDescription,
   getValue,
@@ -424,6 +432,7 @@ function LeaderTopThreeCard({
 }: {
   icon: ComponentType<{ className?: string }>
   label: string
+  memberById: Map<number, Member>
   stats: MemberStatistics[]
   getDescription: (stat: MemberStatistics) => string
   getValue: (stat: MemberStatistics) => string
@@ -431,6 +440,7 @@ function LeaderTopThreeCard({
   onSelectMember: (memberId: number) => void
 }) {
   const [first, ...rest] = stats
+  const firstMember = first ? memberById.get(first.memberId) ?? null : null
 
   return (
     <Card className="overflow-hidden">
@@ -445,6 +455,7 @@ function LeaderTopThreeCard({
             <div className={`inline-flex h-11 w-11 items-center justify-center rounded-md border ${tone}`}>
               <Icon className="h-5 w-5" />
             </div>
+            {first ? <StatProfileAvatar member={firstMember} name={first.memberName} size="md" /> : null}
           </div>
           <p className="mt-4 text-xs font-black text-muted-foreground">{label}</p>
           <p className="mt-1 truncate text-2xl font-black text-foreground">{first ? first.memberName : "-"}</p>
@@ -466,7 +477,10 @@ function LeaderTopThreeCard({
                 <span className="inline-flex h-7 items-center justify-center rounded-md bg-secondary text-xs font-black text-muted-foreground">
                   {index + 2}위
                 </span>
-                <span className="min-w-0 truncate font-black text-foreground">{stat.memberName}</span>
+                <span className="flex min-w-0 items-center gap-2">
+                  <StatProfileAvatar member={memberById.get(stat.memberId) ?? null} name={stat.memberName} size="xs" />
+                  <span className="min-w-0 truncate font-black text-foreground">{stat.memberName}</span>
+                </span>
                 <span className="font-black text-muted-foreground">{getValue(stat)}</span>
               </button>
             ))}
@@ -545,6 +559,7 @@ function OverviewSectionTitle({ title, description }: { title: string; descripti
 
 function RankingCard({
   loading,
+  memberById,
   query,
   rankedStats,
   selectedMemberId,
@@ -554,6 +569,7 @@ function RankingCard({
   onSortChange,
 }: {
   loading: boolean
+  memberById: Map<number, Member>
   query: string
   rankedStats: MemberStatistics[]
   selectedMemberId: number
@@ -616,6 +632,7 @@ function RankingCard({
                       <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border text-xs font-black ${rankingBadgeTone(index)}`}>
                         {index + 1}
                       </span>
+                      <StatProfileAvatar member={memberById.get(stat.memberId) ?? null} name={stat.memberName} />
                       <span className="min-w-0">
                         <span className="block truncate text-base font-black text-foreground">{stat.memberName}</span>
                         <span className="mt-0.5 block text-xs font-semibold text-muted-foreground">
@@ -660,7 +677,12 @@ function RankingCard({
                       onClick={() => onSelectMember(stat.memberId)}
                     >
                       <td className="px-3 py-3 text-center font-black text-muted-foreground">{index + 1}</td>
-                      <td className="px-3 py-3 font-black text-foreground">{stat.memberName}</td>
+                      <td className="px-3 py-3">
+                        <span className="flex min-w-0 items-center gap-2 font-black text-foreground">
+                          <StatProfileAvatar member={memberById.get(stat.memberId) ?? null} name={stat.memberName} size="sm" />
+                          <span className="min-w-0 truncate">{stat.memberName}</span>
+                        </span>
+                      </td>
                       <td className="px-3 py-3 text-right font-black text-accent">{stat.winRate}%</td>
                       <td className="px-3 py-3 text-right font-semibold">{stat.playedCount}</td>
                       <td className="px-3 py-3 text-right font-semibold">
@@ -707,11 +729,47 @@ function rankingBadgeTone(index: number) {
   return "border-border bg-secondary text-muted-foreground"
 }
 
+function StatProfileAvatar({
+  member,
+  name,
+  size = "md",
+}: {
+  member: Member | null
+  name: string
+  size?: "xs" | "sm" | "md" | "lg"
+}) {
+  const sizeClass = {
+    xs: "h-7 w-7 text-xs",
+    sm: "h-8 w-8 text-sm",
+    md: "h-10 w-10 text-base",
+    lg: "h-14 w-14 text-2xl",
+  }[size]
+  const imageUrl = member?.profileImageUrl
+
+  if (imageUrl) {
+    return (
+      <img
+        className={`${sizeClass} shrink-0 rounded-md border border-border object-cover`}
+        src={imageUrl}
+        alt={`${name} 프로필`}
+      />
+    )
+  }
+
+  return (
+    <span className={`${sizeClass} flex shrink-0 items-center justify-center rounded-md border border-accent/30 bg-accent/10 font-black text-accent`}>
+      {name.slice(0, 1)}
+    </span>
+  )
+}
+
 function MemberDetailCard({
+  member,
   stat,
   statisticsFilter,
   onBack,
 }: {
+  member: Member | null
   stat: MemberStatistics | null
   statisticsFilter: StatisticsFilter
   onBack: () => void
@@ -783,9 +841,7 @@ function MemberDetailCard({
             <div>
               <div className="flex flex-col gap-4 border-b border-border bg-background px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-accent/30 bg-accent/10 text-2xl font-black text-accent">
-                    {stat.memberName.slice(0, 1)}
-                  </div>
+                  <StatProfileAvatar member={member} name={stat.memberName} size="lg" />
                   <div className="min-w-0">
                     <h2 className="truncate text-3xl font-black leading-tight text-foreground">{stat.memberName}</h2>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
