@@ -1,5 +1,5 @@
 ﻿import { FormEvent, useEffect, useState } from "react"
-import { AlertTriangle, BarChart3, ClipboardList, LayoutDashboard, LogOut, MessageSquareText, Trophy, UsersRound } from "lucide-react"
+import { AlertTriangle, BarChart3, ClipboardList, LayoutDashboard, Loader2, LogOut, MessageSquareText, Trophy, UsersRound } from "lucide-react"
 import {
   createAttendanceVote,
   createFeeExpense,
@@ -179,6 +179,16 @@ function App() {
   const [savingFee, setSavingFee] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const readOnly = authSession?.mode === "guest"
+  const busyMessage = getBusyMessage({
+    loading,
+    savingMember,
+    savingGame,
+    savingAttendance,
+    savingTeam,
+    savingResult,
+    savingNotice,
+    savingFee,
+  })
 
   function enterAsGuest() {
     const session = { mode: "guest" as const, name: "비회원" }
@@ -1353,6 +1363,7 @@ function App() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
+      <GlobalBusyIndicator message={busyMessage} />
       <div className="court-lines" />
       <AccountStatusChip
         className="fixed right-3 top-3 z-50 sm:hidden"
@@ -1772,6 +1783,57 @@ function readAuthSession(): AuthSession | null {
   } catch {
     localStorage.removeItem(authStorageKey)
   }
+
+  return null
+}
+
+function GlobalBusyIndicator({ message }: { message: string | null }) {
+  if (!message) {
+    return null
+  }
+
+  return (
+    <>
+      <div className="global-loading-bar" aria-hidden="true" />
+      <div
+        className="fixed bottom-4 right-4 z-[90] inline-flex max-w-[calc(100vw-32px)] items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-bold text-foreground shadow-xl shadow-slate-900/15"
+        role="status"
+        aria-live="polite"
+      >
+        <Loader2 className="h-4 w-4 animate-spin text-accent" />
+        <span>{message}</span>
+      </div>
+    </>
+  )
+}
+
+function getBusyMessage({
+  loading,
+  savingMember,
+  savingGame,
+  savingAttendance,
+  savingTeam,
+  savingResult,
+  savingNotice,
+  savingFee,
+}: {
+  loading: boolean
+  savingMember: boolean
+  savingGame: boolean
+  savingAttendance: boolean
+  savingTeam: boolean
+  savingResult: boolean
+  savingNotice: boolean
+  savingFee: boolean
+}) {
+  if (savingTeam) return "팀 구성을 저장 중입니다."
+  if (savingResult) return "점수를 저장 중입니다."
+  if (savingAttendance) return "참석 정보를 저장 중입니다."
+  if (savingMember) return "회원 정보를 저장 중입니다."
+  if (savingGame) return "경기 일정을 저장 중입니다."
+  if (savingNotice) return "게시글을 저장 중입니다."
+  if (savingFee) return "회비 정보를 저장 중입니다."
+  if (loading) return "데이터를 불러오는 중입니다."
 
   return null
 }
