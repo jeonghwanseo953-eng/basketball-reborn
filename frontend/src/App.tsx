@@ -278,32 +278,15 @@ function App() {
     setError(null)
 
     try {
-      const [dashboardData, memberData, gameDayData, noticeData, feeMonthData, statsData, overviewData] = await Promise.all([
+      const [dashboardData, memberData, gameDayData] = await Promise.all([
         getDashboard(),
         getMembers(),
         getGameDays(),
-        getNotices(),
-        getFeeMonths(),
-        getMemberStatistics(defaultStatisticsFilter),
-        getStatisticsOverview(defaultStatisticsFilter).catch(() => null),
       ])
       setDashboard(dashboardData)
       setMembers(memberData)
       setGameDays(gameDayData)
-      setNotices(noticeData)
-      setFeeMonths(feeMonthData)
-      setMemberStats(statsData)
-      setStatisticsOverview(overviewData)
-      const defaultStatMemberId = statsData[0]?.memberId ?? memberData[0]?.id ?? 0
-      if (defaultStatMemberId) {
-        setSelectedStatMemberId(defaultStatMemberId)
-        setSelectedMemberStat(await getMemberStatistic(defaultStatMemberId, defaultStatisticsFilter))
-      }
-      setCombinationMemberIds(memberData.slice(0, 2).map((member) => member.id))
-      const defaultFeeMonthId = feeMonthData[0]?.id ?? 0
-      if (defaultFeeMonthId) {
-        await loadFees(defaultFeeMonthId)
-      }
+
       const defaultGameDayId = dashboardData.nextGameDay?.id ?? gameDayData[0]?.id ?? 0
       if (defaultGameDayId) {
         setSelectedGameDayId(defaultGameDayId)
@@ -321,15 +304,67 @@ function App() {
           setDashboardAttendanceVotes([])
         }
         setAttendanceSummary(summary)
-        const [teamData, resultData] = await Promise.all([getTeams(defaultGameDayId), getGameResults(defaultGameDayId)])
-        setTeams(teamData)
-        setGameResults(resultData)
         setResultForm((current) => ({ ...current, gameDayId: defaultGameDayId }))
       }
+
+      setLoading(false)
+      void loadDeferredHomeData({ dashboardData, memberData, defaultGameDayId })
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "알 수 없는 오류가 발생했습니다.")
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function loadDeferredHomeData({
+    dashboardData,
+    memberData,
+    defaultGameDayId,
+  }: {
+    dashboardData: Dashboard
+    memberData: Member[]
+    defaultGameDayId: number
+  }) {
+    try {
+      const [noticeData, feeMonthData, statsData, overviewData] = await Promise.all([
+        getNotices(),
+        getFeeMonths(),
+        getMemberStatistics(defaultStatisticsFilter),
+        getStatisticsOverview(defaultStatisticsFilter).catch(() => null),
+      ])
+      setNotices(noticeData)
+      setFeeMonths(feeMonthData)
+      setMemberStats(statsData)
+      setStatisticsOverview(overviewData)
+
+      const defaultStatMemberId = statsData[0]?.memberId ?? memberData[0]?.id ?? 0
+      if (defaultStatMemberId) {
+        setSelectedStatMemberId(defaultStatMemberId)
+        setSelectedMemberStat(await getMemberStatistic(defaultStatMemberId, defaultStatisticsFilter))
+      }
+
+      setCombinationMemberIds(memberData.slice(0, 2).map((member) => member.id))
+
+      const defaultFeeMonthId = feeMonthData[0]?.id ?? 0
+      if (defaultFeeMonthId) {
+        await loadFees(defaultFeeMonthId)
+      }
+
+      if (defaultGameDayId) {
+        const [teamData, resultData] = await Promise.all([getTeams(defaultGameDayId), getGameResults(defaultGameDayId)])
+        setTeams(teamData)
+        setGameResults(resultData)
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "일부 데이터를 불러오지 못했습니다.")
+    }
+
+    if (dashboardData.nextGameDay?.id && dashboardData.nextGameDay.id !== defaultGameDayId) {
+      try {
+        setDashboardAttendanceVotes(await getAttendanceVotes(dashboardData.nextGameDay.id))
+      } catch {
+        setDashboardAttendanceVotes([])
+      }
     }
   }
 
