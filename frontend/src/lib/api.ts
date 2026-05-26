@@ -336,6 +336,16 @@ export function createNoticeComment(noticeId: number, payload: NoticeCommentRequ
   })
 }
 
+export function updateNoticeComment(noticeId: number, commentId: number, payload: NoticeCommentRequest): Promise<NoticeComment> {
+  return request<NoticeComment>(`/api/notices/${noticeId}/comments/${commentId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  })
+}
+
 export function deleteNoticeComment(noticeId: number, commentId: number): Promise<void> {
   return requestEmpty(`/api/notices/${noticeId}/comments/${commentId}`, {
     method: "DELETE",

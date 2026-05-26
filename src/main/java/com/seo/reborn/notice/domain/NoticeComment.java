@@ -46,6 +46,10 @@ public class NoticeComment {
 		return new NoticeComment(notice, authorName, content);
 	}
 
+	public void update(String content) {
+		this.content = content;
+	}
+
 	@PrePersist
 	void prePersist() {
 		this.createdAt = LocalDateTime.now();

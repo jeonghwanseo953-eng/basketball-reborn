@@ -37,11 +37,11 @@ public class NoticeService {
 	}
 
 	@Transactional
-	public NoticeResponse create(NoticeRequest request) {
+	public NoticeResponse create(NoticeRequest request, String currentAuthorName) {
 		Notice notice = Notice.create(
 			request.title(),
 			request.content(),
-			request.authorName(),
+			resolveAuthorName(request.authorName(), currentAuthorName),
 			request.pinned()
 		);
 
@@ -49,12 +49,13 @@ public class NoticeService {
 	}
 
 	@Transactional
-	public NoticeResponse update(Long id, NoticeRequest request) {
+	public NoticeResponse update(Long id, NoticeRequest request, String currentAuthorName) {
 		Notice notice = getNotice(id);
+		validateAuthor(notice.getAuthorName(), currentAuthorName);
 		notice.update(
 			request.title(),
 			request.content(),
-			request.authorName(),
+			notice.getAuthorName(),
 			request.pinned()
 		);
 
@@ -62,13 +63,11 @@ public class NoticeService {
 	}
 
 	@Transactional
-	public void delete(Long id) {
-		if (!noticeRepository.existsById(id)) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Notice not found: " + id);
-		}
-
+	public void delete(Long id, String currentAuthorName) {
+		Notice notice = getNotice(id);
+		validateAuthor(notice.getAuthorName(), currentAuthorName);
 		noticeCommentRepository.deleteByNoticeId(id);
-		noticeRepository.deleteById(id);
+		noticeRepository.delete(notice);
 	}
 
 	public List<NoticeCommentResponse> findComments(Long noticeId) {
@@ -82,15 +81,30 @@ public class NoticeService {
 	}
 
 	@Transactional
-	public NoticeCommentResponse createComment(Long noticeId, NoticeCommentRequest request) {
+	public NoticeCommentResponse createComment(Long noticeId, NoticeCommentRequest request, String currentAuthorName) {
 		Notice notice = getNotice(noticeId);
-		NoticeComment comment = NoticeComment.create(notice, request.authorName(), request.content());
+		NoticeComment comment = NoticeComment.create(notice, resolveAuthorName(request.authorName(), currentAuthorName), request.content());
 
 		return NoticeCommentResponse.from(noticeCommentRepository.save(comment));
 	}
 
 	@Transactional
-	public void deleteComment(Long noticeId, Long commentId) {
+	public NoticeCommentResponse updateComment(Long noticeId, Long commentId, NoticeCommentRequest request, String currentAuthorName) {
+		NoticeComment comment = getCommentForNotice(noticeId, commentId);
+		validateAuthor(comment.getAuthorName(), currentAuthorName);
+		comment.update(request.content());
+
+		return NoticeCommentResponse.from(comment);
+	}
+
+	@Transactional
+	public void deleteComment(Long noticeId, Long commentId, String currentAuthorName) {
+		NoticeComment comment = getCommentForNotice(noticeId, commentId);
+		validateAuthor(comment.getAuthorName(), currentAuthorName);
+		noticeCommentRepository.delete(comment);
+	}
+
+	private NoticeComment getCommentForNotice(Long noticeId, Long commentId) {
 		NoticeComment comment = noticeCommentRepository.findById(commentId)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notice comment not found: " + commentId));
 
@@ -98,11 +112,29 @@ public class NoticeService {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Notice comment not found: " + commentId);
 		}
 
-		noticeCommentRepository.delete(comment);
+		return comment;
 	}
 
 	private Notice getNotice(Long id) {
 		return noticeRepository.findById(id)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notice not found: " + id));
+	}
+
+	private String resolveAuthorName(String requestAuthorName, String currentAuthorName) {
+		if (currentAuthorName != null && !currentAuthorName.isBlank()) {
+			return currentAuthorName.trim();
+		}
+
+		return requestAuthorName;
+	}
+
+	private void validateAuthor(String authorName, String currentAuthorName) {
+		if (currentAuthorName == null || currentAuthorName.isBlank()) {
+			return;
+		}
+
+		if (!authorName.equals(currentAuthorName.trim())) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인이 작성한 글과 댓글만 수정/삭제할 수 있습니다.");
+		}
 	}
 }

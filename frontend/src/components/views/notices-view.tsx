@@ -5,7 +5,7 @@ import { EmptyState, FormModal, SelectInput, SkeletonRows, TextArea, TextInput }
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { createNoticeComment, deleteNoticeComment, getNoticeComments } from "@/lib/api"
+import { createNoticeComment, deleteNoticeComment, getNoticeComments, updateNoticeComment } from "@/lib/api"
 import type { Notice, NoticeComment, NoticeCommentRequest, NoticeRequest } from "@/types/api"
 
 export function NoticesView({
@@ -45,6 +45,8 @@ export function NoticesView({
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null)
   const [comments, setComments] = useState<NoticeComment[]>([])
   const [commentForm, setCommentForm] = useState<NoticeCommentRequest>({ authorName: "", content: "" })
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
+  const [editingCommentContent, setEditingCommentContent] = useState("")
   const [commentsLoading, setCommentsLoading] = useState(false)
   const [commentSaving, setCommentSaving] = useState(false)
   const [query, setQuery] = useState("")
@@ -133,6 +135,7 @@ export function NoticesView({
     setSelectedNotice(notice)
     setComments([])
     setCommentForm({ authorName: fixedAuthorName, content: "" })
+    cancelEditComment()
     setCommentsLoading(true)
 
     try {
@@ -165,8 +168,33 @@ export function NoticesView({
     }
   }
 
+  function startEditComment(comment: NoticeComment) {
+    if (readOnly || !canModifyAuthor(comment.authorName, fixedAuthorName)) return
+    setEditingCommentId(comment.id)
+    setEditingCommentContent(comment.content)
+  }
+
+  function cancelEditComment() {
+    setEditingCommentId(null)
+    setEditingCommentContent("")
+  }
+
+  async function submitEditComment(comment: NoticeComment) {
+    if (readOnly || !selectedNotice || !canModifyAuthor(comment.authorName, fixedAuthorName) || !editingCommentContent.trim()) {
+      return
+    }
+
+    const updated = await updateNoticeComment(selectedNotice.id, comment.id, {
+      authorName: fixedAuthorName,
+      content: editingCommentContent.trim(),
+    })
+    setComments((current) => current.map((currentComment) => (currentComment.id === updated.id ? updated : currentComment)))
+    cancelEditComment()
+  }
+
   async function removeComment(comment: NoticeComment) {
     if (readOnly) return
+    if (!canModifyAuthor(comment.authorName, fixedAuthorName)) return
     if (!selectedNotice || !confirm("댓글을 삭제할까요?")) {
       return
     }
@@ -223,9 +251,15 @@ export function NoticesView({
           commentsLoading={commentsLoading}
           commentSaving={commentSaving}
           currentAuthorName={fixedAuthorName}
+          editingCommentContent={editingCommentContent}
+          editingCommentId={editingCommentId}
           onBack={() => setSelectedNotice(null)}
+          onCancelCommentEdit={cancelEditComment}
           onCommentChange={setCommentForm}
           onCommentDelete={(comment) => void removeComment(comment)}
+          onCommentEdit={startEditComment}
+          onCommentEditChange={setEditingCommentContent}
+          onCommentEditSubmit={(comment) => void submitEditComment(comment)}
           onCommentSubmit={(event) => void submitComment(event)}
           onDelete={deleteNotice}
           onEdit={editNotice}
@@ -351,9 +385,15 @@ function NoticeDetailView({
   commentsLoading,
   commentSaving,
   currentAuthorName,
+  editingCommentContent,
+  editingCommentId,
   onBack,
+  onCancelCommentEdit,
   onCommentChange,
   onCommentDelete,
+  onCommentEdit,
+  onCommentEditChange,
+  onCommentEditSubmit,
   onCommentSubmit,
   onDelete,
   onEdit,
@@ -365,14 +405,22 @@ function NoticeDetailView({
   commentsLoading: boolean
   commentSaving: boolean
   currentAuthorName: string
+  editingCommentContent: string
+  editingCommentId: number | null
   onBack: () => void
+  onCancelCommentEdit: () => void
   onCommentChange: (form: NoticeCommentRequest) => void
   onCommentDelete: (comment: NoticeComment) => void
+  onCommentEdit: (comment: NoticeComment) => void
+  onCommentEditChange: (content: string) => void
+  onCommentEditSubmit: (comment: NoticeComment) => void
   onCommentSubmit: (event: FormEvent<HTMLFormElement>) => void
   onDelete: (notice: Notice) => void
   onEdit: (notice: Notice) => void
   readOnly?: boolean
 }) {
+  const ownNotice = canModifyAuthor(notice.authorName, currentAuthorName)
+
   return (
     <Card>
       <CardHeader className="border-b border-border bg-secondary/15 px-4 py-4">
@@ -396,7 +444,7 @@ function NoticeDetailView({
                 {notice.authorName}
               </p>
             </div>
-            {!readOnly ? (
+            {!readOnly && ownNotice ? (
               <div className="grid grid-cols-2 gap-2 sm:w-48">
                 <Button type="button" onClick={() => onEdit(notice)}>
                   <Pencil className="h-4 w-4" />
@@ -430,17 +478,51 @@ function NoticeDetailView({
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-sm font-black text-foreground">{comment.authorName}</p>
-                          <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{comment.content}</p>
+                          {editingCommentId === comment.id ? (
+                            <div className="mt-2 grid gap-2">
+                              <input
+                                className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                                value={editingCommentContent}
+                                onChange={(event) => onCommentEditChange(event.target.value)}
+                                autoFocus
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  className="h-8 px-3 text-xs"
+                                  type="button"
+                                  size="sm"
+                                  disabled={!editingCommentContent.trim()}
+                                  onClick={() => onCommentEditSubmit(comment)}
+                                >
+                                  저장
+                                </Button>
+                                <Button className="h-8 px-3 text-xs" type="button" variant="outline" size="sm" onClick={onCancelCommentEdit}>
+                                  취소
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{comment.content}</p>
+                          )}
                           <p className="mt-2 text-xs font-semibold text-muted-foreground">{formatNoticeDate(comment.createdAt)}</p>
                         </div>
-                        {!readOnly ? (
-                          <button
-                            className="shrink-0 rounded-md border border-border px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground"
-                            type="button"
-                            onClick={() => onCommentDelete(comment)}
-                          >
-                            삭제
-                          </button>
+                        {!readOnly && canModifyAuthor(comment.authorName, currentAuthorName) && editingCommentId !== comment.id ? (
+                          <div className="flex shrink-0 gap-1">
+                            <button
+                              className="rounded-md border border-border px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground"
+                              type="button"
+                              onClick={() => onCommentEdit(comment)}
+                            >
+                              수정
+                            </button>
+                            <button
+                              className="rounded-md border border-border px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground"
+                              type="button"
+                              onClick={() => onCommentDelete(comment)}
+                            >
+                              삭제
+                            </button>
+                          </div>
                         ) : null}
                       </div>
                     </article>
@@ -486,4 +568,8 @@ function formatNoticeDate(value: string) {
     month: "long",
     day: "numeric",
   }).format(new Date(value))
+}
+
+function canModifyAuthor(authorName: string, currentAuthorName: string) {
+  return Boolean(currentAuthorName.trim()) && authorName.trim() === currentAuthorName.trim()
 }

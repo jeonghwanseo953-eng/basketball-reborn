@@ -112,6 +112,22 @@ public class AuthService {
 		}
 	}
 
+	public String resolveWriteAuthorName(String token) {
+		if (!requireWriteAuth && (token == null || token.isBlank())) {
+			return null;
+		}
+
+		KakaoAccount account = authenticate(token);
+		Member member = account.getMember();
+		String authorName = member == null ? account.getNickname() : member.getName();
+
+		if (authorName == null || authorName.isBlank()) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "작성자 정보를 확인하지 못했습니다.");
+		}
+
+		return authorName.trim();
+	}
+
 	@Transactional
 	public AuthResponse linkMember(String token, Long memberId) {
 		KakaoAccount account = authenticate(token);
