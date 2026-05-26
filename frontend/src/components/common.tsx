@@ -230,7 +230,7 @@ export function FormModal({
   size?: "default" | "wide"
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-background/80 px-3 py-4 backdrop-blur-sm sm:items-center">
+    <div className="fixed inset-0 z-[90] flex items-start justify-center bg-background/80 px-3 py-4 backdrop-blur-sm sm:items-center">
       <section
         className={`max-h-[calc(100vh-32px)] w-full overflow-y-auto rounded-lg border border-border bg-card shadow-2xl ${
           size === "wide" ? "max-w-7xl" : "max-w-2xl"
