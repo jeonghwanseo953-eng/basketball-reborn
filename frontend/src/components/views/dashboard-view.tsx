@@ -51,7 +51,8 @@ export function DashboardView({
     .toSorted((left, right) => right.winRate - left.winRate || right.playedCount - left.playedCount)[0] ?? null
   const finalResults = (dashboard?.recentResults ?? []).slice(0, 3)
   const recentResultDate = finalResults[0]?.gameDate ? formatDate(finalResults[0].gameDate) : null
-  const canVote = Boolean(dashboard?.nextGameDay) && Boolean(currentMemberId) && !readOnly
+  const nextGameDay = dashboard?.nextGameDay ?? null
+  const canVote = Boolean(nextGameDay) && Boolean(currentMemberId) && !readOnly
   const regularMembers = members.filter((member) => member.status === "REGULAR")
   const voteByMemberId = new Map(attendanceVotes.flatMap((vote) => (vote.memberId ? [[vote.memberId, vote]] : [])))
   const attendanceRows = regularMembers.map((member) => {
@@ -62,11 +63,28 @@ export function DashboardView({
       voted: Boolean(vote),
     }
   })
-  const attendanceCounts = {
+  const fallbackAttendanceCounts = {
     ATTENDING: attendanceRows.filter((row) => row.status === "ATTENDING").length,
     ABSENT: attendanceRows.filter((row) => row.status === "ABSENT").length,
     UNDECIDED: attendanceRows.filter((row) => row.status === "UNDECIDED").length,
   }
+  const attendanceSummary = dashboard?.nextGameAttendance
+  const attendanceCounts = {
+    ATTENDING: attendanceSummary?.attendingCount ?? fallbackAttendanceCounts.ATTENDING,
+    ABSENT: attendanceSummary?.absentCount ?? fallbackAttendanceCounts.ABSENT,
+    UNDECIDED: attendanceSummary?.undecidedCount ?? fallbackAttendanceCounts.UNDECIDED,
+  }
+  const totalAttendanceCount = attendanceSummary?.totalCount ?? regularMembers.length
+  const attendingRate = totalAttendanceCount ? Math.round((attendanceCounts.ATTENDING / totalAttendanceCount) * 100) : 0
+  const myAttendanceLabel = readOnly
+    ? "조회 전용"
+    : currentMemberVote
+      ? attendanceStatusLabels[currentMemberVote.status]
+      : canVote
+        ? "미투표"
+        : "-"
+  const myAttendanceTone = currentMemberVote?.status === "ATTENDING" ? "accent" : currentMemberVote?.status === "ABSENT" ? "danger" : "muted"
+  const teamStatusLabel = nextGameDay ? (nextGameDay.teamCount > 0 ? `${nextGameDay.teamCount}팀 구성` : "팀 미구성") : "-"
   const selectedAttendanceRows = openAttendanceStatus
     ? attendanceRows.filter((row) => row.status === openAttendanceStatus).toSorted((left, right) => left.member.name.localeCompare(right.member.name, "ko"))
     : []
@@ -104,17 +122,31 @@ export function DashboardView({
                     <div className="mt-5 max-w-lg">
                       <SkeletonRows />
                     </div>
-                  ) : dashboard?.nextGameDay ? (
+                  ) : nextGameDay ? (
                     <>
                       <h2 className="mt-4 text-4xl font-black leading-tight text-white">
-                        {formatDate(dashboard.nextGameDay.gameDate)}
+                        {formatDate(nextGameDay.gameDate)}
                       </h2>
                       <p className="mt-2 text-base font-semibold text-white/75">
-                        {dashboard.nextGameDay.place} · {formatTimeRange(dashboard.nextGameDay.startTime, dashboard.nextGameDay.endTime)}
+                        {nextGameDay.place} · {formatTimeRange(nextGameDay.startTime, nextGameDay.endTime)}
                       </p>
                       <div className="mt-4 flex flex-wrap gap-2">
-                        <Badge className="border-accent/45 bg-accent/15 text-cyan-100">{modeLabels[dashboard.nextGameDay.mode]}</Badge>
-                        <Badge className="border-white/20 bg-white/10 text-white/85">{gameTypeLabels[dashboard.nextGameDay.gameType]}</Badge>
+                        <Badge className="border-accent/45 bg-accent/15 text-cyan-100">{modeLabels[nextGameDay.mode]}</Badge>
+                        <Badge className="border-white/20 bg-white/10 text-white/85">{gameTypeLabels[nextGameDay.gameType]}</Badge>
+                        {canVote && !currentMemberVote ? (
+                          <Badge className="border-amber-300/45 bg-amber-300/15 text-amber-100">출석 투표 필요</Badge>
+                        ) : null}
+                      </div>
+                      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        <NextGameSummaryTile label="내 출석" value={myAttendanceLabel} tone={myAttendanceTone} />
+                        <NextGameSummaryTile
+                          label="참석 인원"
+                          value={`${attendanceCounts.ATTENDING}/${totalAttendanceCount}명`}
+                          detail={`${attendingRate}%`}
+                          tone="accent"
+                        />
+                        <NextGameSummaryTile label="팀 담당" value={nextGameDay.teamBuilderName ?? "미지정"} />
+                        <NextGameSummaryTile label="팀 상태" value={teamStatusLabel} tone={nextGameDay.teamCount > 0 ? "accent" : "muted"} />
                       </div>
                     </>
                   ) : (
@@ -125,7 +157,7 @@ export function DashboardView({
                 </div>
 
                 <div className="flex flex-wrap gap-2 sm:justify-end">
-                  <Button type="button" onClick={onOpenTeams} disabled={!dashboard?.nextGameDay}>
+                  <Button className="w-full sm:w-auto" type="button" onClick={onOpenTeams} disabled={!nextGameDay}>
                     {readOnly ? "팀 보기" : "팀 구성"}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
@@ -139,19 +171,19 @@ export function DashboardView({
                   <DashboardMetric
                     active={openAttendanceStatus === "ATTENDING"}
                     label="참석"
-                    value={dashboard?.nextGameDay ? `${attendanceCounts.ATTENDING}명` : "-"}
+                    value={nextGameDay ? `${attendanceCounts.ATTENDING}명` : "-"}
                     onClick={() => setOpenAttendanceStatus((current) => (current === "ATTENDING" ? null : "ATTENDING"))}
                   />
                   <DashboardMetric
                     active={openAttendanceStatus === "ABSENT"}
                     label="불참"
-                    value={dashboard?.nextGameDay ? `${attendanceCounts.ABSENT}명` : "-"}
+                    value={nextGameDay ? `${attendanceCounts.ABSENT}명` : "-"}
                     onClick={() => setOpenAttendanceStatus((current) => (current === "ABSENT" ? null : "ABSENT"))}
                   />
                   <DashboardMetric
                     active={openAttendanceStatus === "UNDECIDED"}
                     label="미정"
-                    value={dashboard?.nextGameDay ? `${attendanceCounts.UNDECIDED}명` : "-"}
+                    value={nextGameDay ? `${attendanceCounts.UNDECIDED}명` : "-"}
                     onClick={() => setOpenAttendanceStatus((current) => (current === "UNDECIDED" ? null : "UNDECIDED"))}
                   />
                 </div>
@@ -193,7 +225,7 @@ export function DashboardView({
                         }`}
                         type="button"
                         onClick={() => setVoteStatus(status)}
-                        disabled={!dashboard?.nextGameDay || voting}
+                        disabled={!nextGameDay || voting}
                       >
                         {attendanceStatusLabels[status]}
                       </button>
@@ -329,6 +361,34 @@ export function DashboardView({
         </section>
       </div>
     </>
+  )
+}
+
+function NextGameSummaryTile({
+  label,
+  value,
+  detail,
+  tone = "muted",
+}: {
+  label: string
+  value: string
+  detail?: string
+  tone?: "accent" | "danger" | "muted"
+}) {
+  const toneClass = {
+    accent: "border-accent/35 bg-accent/15 text-white",
+    danger: "border-rose-300/35 bg-rose-400/15 text-white",
+    muted: "border-white/15 bg-white/10 text-white",
+  }[tone]
+
+  return (
+    <div className={`min-w-0 rounded-md border px-3 py-2 ${toneClass}`}>
+      <p className="truncate text-[11px] font-black text-white/60">{label}</p>
+      <div className="mt-1 flex min-w-0 items-end justify-between gap-2">
+        <p className="min-w-0 truncate text-sm font-black leading-5 sm:text-base">{value}</p>
+        {detail ? <span className="shrink-0 text-[11px] font-black text-white/65">{detail}</span> : null}
+      </div>
+    </div>
   )
 }
 
