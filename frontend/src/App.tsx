@@ -179,6 +179,7 @@ function App() {
   const [savingResult, setSavingResult] = useState(false)
   const [savingNotice, setSavingNotice] = useState(false)
   const [savingFee, setSavingFee] = useState(false)
+  const [kakaoLoginLoading, setKakaoLoginLoading] = useState(() => new URLSearchParams(window.location.search).has("code"))
   const [error, setError] = useState<string | null>(null)
   const readOnly = authSession?.mode === "guest"
   const currentMemberRole = authSession?.memberRole ?? "NONE"
@@ -221,6 +222,8 @@ function App() {
     const redirectUri = `${window.location.origin}${window.location.pathname}`
     const state = crypto.randomUUID()
 
+    setKakaoLoginLoading(true)
+    setError(null)
     try {
       sessionStorage.setItem("reborn-kakao-state", state)
       const { url } = await getKakaoLoginUrl(redirectUri, state)
@@ -228,6 +231,7 @@ function App() {
     } catch {
       const response = await devLogin()
       saveAuthSession(authResponseToSession(response))
+      setKakaoLoginLoading(false)
     }
   }
 
@@ -1385,12 +1389,14 @@ function App() {
     const expectedState = sessionStorage.getItem("reborn-kakao-state")
 
     if (kakaoCode && (!kakaoState || kakaoState === expectedState)) {
+      setKakaoLoginLoading(true)
       void completeKakaoLogin(kakaoCode, `${window.location.origin}${window.location.pathname}`)
         .then((response) => saveAuthSession(authResponseToSession(response)))
         .catch((cause) => setError(cause instanceof Error ? cause.message : "카카오 로그인에 실패했습니다."))
         .finally(() => {
           sessionStorage.removeItem("reborn-kakao-state")
           window.history.replaceState(null, "", window.location.pathname)
+          setKakaoLoginLoading(false)
         })
     }
   }, [])
@@ -1409,7 +1415,12 @@ function App() {
   }, [authSession])
 
   if (!authSession) {
-    return <EntranceScreen onGuest={enterAsGuest} onKakao={loginWithKakao} />
+    return (
+      <>
+        <EntranceScreen onGuest={enterAsGuest} onKakao={loginWithKakao} kakaoLoginLoading={kakaoLoginLoading} />
+        <CenterLoadingOverlay open={kakaoLoginLoading} message="카카오 로그인을 준비 중입니다." />
+      </>
+    )
   }
 
   if (authSession.mode === "member" && !authSession.linked) {
@@ -1428,6 +1439,7 @@ function App() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <GlobalBusyIndicator message={busyMessage} />
+      <CenterLoadingOverlay open={kakaoLoginLoading} message="카카오 로그인을 확인 중입니다." />
       <div className="court-lines" />
       <AccountStatusChip
         className="fixed right-3 top-3 z-50 sm:hidden"
@@ -1873,6 +1885,24 @@ function GlobalBusyIndicator({ message }: { message: string | null }) {
   )
 }
 
+function CenterLoadingOverlay({ open, message }: { open: boolean; message: string }) {
+  if (!open) {
+    return null
+  }
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-background/70 px-4 backdrop-blur-sm" role="status" aria-live="polite">
+      <section className="flex w-full max-w-xs flex-col items-center gap-3 rounded-lg border border-border bg-card px-5 py-6 text-center shadow-2xl shadow-slate-900/20">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        <div>
+          <p className="text-base font-black text-foreground">{message}</p>
+          <p className="mt-1 text-sm font-semibold text-muted-foreground">잠시만 기다려주세요.</p>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 function getBusyMessage({
   loading,
   savingMember,
@@ -1904,7 +1934,15 @@ function getBusyMessage({
   return null
 }
 
-function EntranceScreen({ onGuest, onKakao }: { onGuest: () => void; onKakao: () => void }) {
+function EntranceScreen({
+  onGuest,
+  onKakao,
+  kakaoLoginLoading,
+}: {
+  onGuest: () => void
+  onKakao: () => void
+  kakaoLoginLoading: boolean
+}) {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="court-lines" />
@@ -1934,13 +1972,14 @@ function EntranceScreen({ onGuest, onKakao }: { onGuest: () => void; onKakao: ()
               <button
                 className="rounded-md border border-[#f2d500] bg-[#fee500] px-5 py-4 text-left text-slate-950 transition-transform hover:-translate-y-0.5"
                 type="button"
+                disabled={kakaoLoginLoading}
                 onClick={onKakao}
               >
                 <span className="flex items-center gap-2 text-lg font-black">
                   <span className="inline-flex h-6 min-w-9 items-center justify-center rounded-full bg-slate-950 px-2 text-[10px] font-black leading-none text-[#fee500]">
                     TALK
                   </span>
-                  카카오로 로그인
+                  {kakaoLoginLoading ? "로그인 준비 중" : "카카오로 로그인"}
                 </span>
                 <span className="mt-1 block text-sm font-semibold text-slate-700">운영 기능 사용</span>
               </button>
