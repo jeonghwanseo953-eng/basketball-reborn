@@ -1,5 +1,5 @@
-﻿import { FormEvent, useEffect, useState } from "react"
-import { AlertTriangle, BarChart3, ClipboardList, LayoutDashboard, Loader2, LogOut, MessageSquareText, Trophy, UsersRound } from "lucide-react"
+﻿import { FormEvent, useEffect, useRef, useState } from "react"
+import { AlertTriangle, BarChart3, CheckCircle2, ClipboardList, LayoutDashboard, Loader2, LogOut, MessageSquareText, Trophy, UsersRound } from "lucide-react"
 import {
   createAttendanceVote,
   createFeeExpense,
@@ -109,6 +109,10 @@ type AppHistoryState = {
   gameOperationModal: GameOperationView | null
   selectedGameDayId: number
 }
+type ToastMessage = {
+  id: number
+  message: string
+}
 type AuthSession = {
   mode: AuthMode
   name: string
@@ -186,6 +190,8 @@ function App() {
   const [savingNotice, setSavingNotice] = useState(false)
   const [savingFee, setSavingFee] = useState(false)
   const [kakaoLoginLoading, setKakaoLoginLoading] = useState(() => new URLSearchParams(window.location.search).has("code"))
+  const [toast, setToast] = useState<ToastMessage | null>(null)
+  const toastTimerRef = useRef<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const readOnly = authSession?.mode === "guest"
   const currentMemberRole = authSession?.memberRole ?? "NONE"
@@ -322,6 +328,18 @@ function App() {
     setGameOperationModal(null)
     setView(nextView)
     pushAppHistory(nextView, null)
+  }
+
+  function showToast(message: string) {
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current)
+    }
+
+    setToast({ id: Date.now(), message })
+    toastTimerRef.current = window.setTimeout(() => {
+      setToast(null)
+      toastTimerRef.current = null
+    }, 2200)
   }
 
   function requireWriteAccess() {
@@ -476,6 +494,7 @@ function App() {
         setMembers((current) => [created, ...current])
       }
       setMemberForm(emptyMemberForm)
+      showToast(editingMemberId ? "회원 정보가 수정됐습니다." : "회원이 등록됐습니다.")
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "회원을 저장하지 못했습니다.")
     } finally {
@@ -491,6 +510,7 @@ function App() {
     try {
       const created = await createMember({ ...payload, status: "GUEST" })
       setMembers((current) => [created, ...current])
+      showToast("게스트가 추가됐습니다.")
       return created
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "게스트를 추가하지 못했습니다.")
@@ -563,6 +583,7 @@ function App() {
     try {
       const updated = await updateMemberProfileImage(memberId, profileImageUrl)
       setMembers((current) => current.map((member) => (member.id === updated.id ? updated : member)))
+      showToast("프로필 사진이 저장됐습니다.")
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "프로필 사진을 저장하지 못했습니다.")
       throw cause
@@ -593,6 +614,7 @@ function App() {
       }
       setGameForm(emptyGameForm)
       setDashboard(await getDashboard())
+      showToast(editingGameDayId ? "경기 일정이 수정됐습니다." : "경기 일정이 등록됐습니다.")
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "경기 일정을 저장하지 못했습니다.")
     } finally {
@@ -673,6 +695,7 @@ function App() {
         cancelEditMember()
       }
       setDashboard(await getDashboard())
+      showToast("회원이 삭제됐습니다.")
     } catch (cause) {
       setError(getDeleteErrorMessage(cause, "회원을 삭제하지 못했습니다."))
     }
@@ -732,6 +755,7 @@ function App() {
       setCombinationMemberIds((current) => current.filter((memberId) => memberId !== member.id))
       setGameDays(await getGameDays())
       setDashboard(await getDashboard())
+      showToast("게스트가 삭제됐습니다.")
       return true
     } catch (cause) {
       setError(getDeleteErrorMessage(cause, "게스트를 삭제하지 못했습니다. 이미 다른 기록에 연결되어 있을 수 있습니다."))
@@ -898,6 +922,7 @@ function App() {
       setAttendanceForm({ ...emptyAttendanceForm, gameDayId: selectedGameDayId })
       setAttendanceSummary(await getAttendanceSummary(selectedGameDayId))
       setDashboard(await getDashboard())
+      showToast(editingAttendanceVoteId ? "참석 투표가 수정됐습니다." : "참석 투표가 저장됐습니다.")
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "참석 투표를 저장하지 못했습니다.")
     } finally {
@@ -952,6 +977,7 @@ function App() {
         setAttendanceSummary(await getAttendanceSummary(gameDayId))
       }
       setDashboard(await getDashboard())
+      showToast("참석 투표가 저장됐습니다.")
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "참석 투표를 저장하지 못했습니다.")
     } finally {
@@ -1033,6 +1059,7 @@ function App() {
 
       setTeams(nextTeams)
       setGameDays(await getGameDays())
+      showToast("팀 배정이 저장됐습니다.")
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "팀 배정을 저장하지 못했습니다.")
     } finally {
@@ -1053,6 +1080,7 @@ function App() {
       await Promise.all(teams.map((team) => deleteTeam(team.id)))
       setTeams([])
       setGameDays(await getGameDays())
+      showToast("팀 배정이 초기화됐습니다.")
     } catch (cause) {
       setError(getDeleteErrorMessage(cause, "팀 배정을 초기화하지 못했습니다."))
     } finally {
@@ -1078,6 +1106,7 @@ function App() {
       }
       setResultForm(normalizeResultFormForGameDay({ ...emptyResultForm, gameDayId: selectedGameDayId }, selectedGameDayId))
       setDashboard(await getDashboard())
+      showToast(editingResultId ? "경기 결과가 수정됐습니다." : "경기 결과가 저장됐습니다.")
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "경기 결과를 저장하지 못했습니다.")
     } finally {
@@ -1122,6 +1151,7 @@ function App() {
       }
       setNoticeForm(emptyNoticeForm)
       setDashboard(await getDashboard())
+      showToast(editingNoticeId ? "게시글이 수정됐습니다." : "게시글이 등록됐습니다.")
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "공지를 저장하지 못했습니다.")
     } finally {
@@ -1189,6 +1219,7 @@ function App() {
         await loadFees(created.id)
       }
       setFeeMonthForm(emptyFeeMonthForm)
+      showToast(editingFeeMonthId ? "회비 월이 수정됐습니다." : "회비 월이 등록됐습니다.")
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "회비 월을 저장하지 못했습니다.")
     } finally {
@@ -1236,6 +1267,7 @@ function App() {
       }
       setFeePaymentForm({ ...emptyFeePaymentForm, feeMonthId: selectedFeeMonthId })
       await loadFees(selectedFeeMonthId)
+      showToast(editingFeePaymentId ? "납부 내역이 수정됐습니다." : "납부 내역이 등록됐습니다.")
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "납부 내역을 저장하지 못했습니다.")
     } finally {
@@ -1278,6 +1310,7 @@ function App() {
       }
       setFeeExpenseForm({ ...emptyFeeExpenseForm, feeMonthId: selectedFeeMonthId })
       await loadFees(selectedFeeMonthId)
+      showToast(editingFeeExpenseId ? "지출 내역이 수정됐습니다." : "지출 내역이 등록됐습니다.")
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "지출 내역을 저장하지 못했습니다.")
     } finally {
@@ -1320,6 +1353,7 @@ function App() {
         setAttendanceSummary(await getAttendanceSummary(selectedGameDayId))
         setDashboard(await getDashboard())
       }
+      showToast("참석 투표가 삭제됐습니다.")
     } catch (cause) {
       setError(getDeleteErrorMessage(cause, "참석 투표를 삭제하지 못했습니다."))
     }
@@ -1336,6 +1370,7 @@ function App() {
       await deleteNotice(id)
       setNotices((current) => current.filter((notice) => notice.id !== id))
       setDashboard(await getDashboard())
+      showToast("게시글이 삭제됐습니다.")
     } catch (cause) {
       setError(getDeleteErrorMessage(cause, "공지를 삭제하지 못했습니다."))
     }
@@ -1354,6 +1389,7 @@ function App() {
         cancelEditFeePayment()
       }
       await loadFees(selectedFeeMonthId)
+      showToast("납부 내역이 삭제됐습니다.")
     } catch (cause) {
       setError(getDeleteErrorMessage(cause, "납부 내역을 삭제하지 못했습니다."))
     }
@@ -1381,6 +1417,7 @@ function App() {
           await loadFees(0)
         }
       }
+      showToast("회비 월이 삭제됐습니다.")
     } catch (cause) {
       setError(getDeleteErrorMessage(cause, "회비 월을 삭제하지 못했습니다."))
     }
@@ -1399,6 +1436,7 @@ function App() {
         cancelEditFeeExpense()
       }
       await loadFees(selectedFeeMonthId)
+      showToast("지출 내역이 삭제됐습니다.")
     } catch (cause) {
       setError(getDeleteErrorMessage(cause, "지출 내역을 삭제하지 못했습니다."))
     }
@@ -1510,6 +1548,14 @@ function App() {
     return () => window.removeEventListener("popstate", handlePopState)
   }, [authSession, gameOperationModal, selectedGameDayId, view])
 
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current)
+      }
+    }
+  }, [])
+
   if (!authSession) {
     return (
       <>
@@ -1535,6 +1581,7 @@ function App() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <GlobalBusyIndicator message={busyMessage} />
+      <ToastViewport toast={toast} />
       <CenterLoadingOverlay open={kakaoLoginLoading} message="카카오 로그인을 확인 중입니다." />
       <div className="court-lines" />
       <AccountStatusChip
@@ -1543,7 +1590,7 @@ function App() {
         readOnly={readOnly}
         onLogout={logout}
       />
-      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pb-24 pt-5 sm:px-6 sm:pb-5 lg:px-8">
         <header className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-center lg:justify-between">
           <button
             className="group flex w-fit items-center gap-3 text-left outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring"
@@ -1566,7 +1613,7 @@ function App() {
             </span>
           </button>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end">
-            <nav className="grid grid-cols-2 gap-1.5 rounded-xl border border-border bg-secondary/70 p-1.5 shadow-sm shadow-slate-900/5 sm:grid-cols-5">
+            <nav className="hidden grid-cols-2 gap-1.5 rounded-xl border border-border bg-secondary/70 p-1.5 shadow-sm shadow-slate-900/5 sm:grid sm:grid-cols-5">
               <TabButton active={view === "dashboard"} icon={LayoutDashboard} onClick={() => navigateToView("dashboard")}>
                 대시보드
               </TabButton>
@@ -1858,6 +1905,7 @@ function App() {
           />
         ) : null}
       </div>
+      <MobileBottomNav view={view} onNavigate={navigateToView} />
     </main>
   )
 }
@@ -1978,6 +2026,56 @@ function GlobalBusyIndicator({ message }: { message: string | null }) {
         <span>{message}</span>
       </div>
     </>
+  )
+}
+
+function ToastViewport({ toast }: { toast: ToastMessage | null }) {
+  if (!toast) {
+    return null
+  }
+
+  return (
+    <div className="fixed bottom-24 left-1/2 z-[110] w-[calc(100vw-32px)] max-w-sm -translate-x-1/2 sm:bottom-5 sm:left-auto sm:right-5 sm:w-auto sm:translate-x-0">
+      <div className="flex items-center gap-2 rounded-md border border-emerald-500/35 bg-card px-3 py-2 text-sm font-black text-foreground shadow-xl shadow-slate-900/15">
+        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+        <span className="min-w-0 truncate">{toast.message}</span>
+      </div>
+    </div>
+  )
+}
+
+function MobileBottomNav({ view, onNavigate }: { view: View; onNavigate: (view: View) => void }) {
+  const items: Array<{ view: View; label: string; icon: typeof LayoutDashboard }> = [
+    { view: "dashboard", label: "홈", icon: LayoutDashboard },
+    { view: "games", label: "게임", icon: Trophy },
+    { view: "members", label: "회원", icon: UsersRound },
+    { view: "notices", label: "게시판", icon: MessageSquareText },
+    { view: "stats", label: "통계", icon: BarChart3 },
+  ]
+
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-[80] border-t border-border bg-card/95 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 shadow-[0_-8px_24px_rgba(15,23,42,0.12)] backdrop-blur sm:hidden">
+      <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+        {items.map(({ view: itemView, label, icon: Icon }) => {
+          const active = view === itemView
+
+          return (
+            <button
+              key={itemView}
+              className={`flex h-14 flex-col items-center justify-center gap-1 rounded-md text-[11px] font-black transition-colors ${
+                active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
+              type="button"
+              aria-current={active ? "page" : undefined}
+              onClick={() => onNavigate(itemView)}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          )
+        })}
+      </div>
+    </nav>
   )
 }
 
