@@ -7,12 +7,16 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "team_members")
+@Table(name = "team_members", indexes = {
+	@Index(name = "idx_team_members_team_sort", columnList = "team_id, sortOrder, id"),
+	@Index(name = "idx_team_members_member", columnList = "member_id")
+})
 public class TeamMember {
 
 	@Id

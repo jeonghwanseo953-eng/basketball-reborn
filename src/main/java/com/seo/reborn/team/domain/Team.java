@@ -11,6 +11,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -20,7 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "teams")
+@Table(name = "teams", indexes = {
+	@Index(name = "idx_teams_game_day", columnList = "game_day_id"),
+	@Index(name = "idx_teams_game_day_name", columnList = "game_day_id, name")
+})
 public class Team {
 
 	@Id

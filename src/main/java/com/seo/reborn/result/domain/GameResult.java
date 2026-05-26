@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
@@ -18,7 +19,10 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "game_results")
+@Table(name = "game_results", indexes = {
+	@Index(name = "idx_game_results_game_day_match_quarter", columnList = "game_day_id, matchNo, quarterNo"),
+	@Index(name = "idx_game_results_quarter_game_day", columnList = "quarterNo, game_day_id")
+})
 public class GameResult {
 
 	@Id

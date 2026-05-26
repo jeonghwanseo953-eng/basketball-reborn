@@ -5,13 +5,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "fee_months")
+@Table(name = "fee_months", indexes = {
+	@Index(name = "idx_fee_months_year_month", columnList = "fee_year, fee_month")
+})
 public class FeeMonth {
 
 	@Id
