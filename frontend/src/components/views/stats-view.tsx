@@ -598,48 +598,113 @@ function RankingCard({
         {loading ? (
           <SkeletonRows />
         ) : rankedStats.length ? (
-          <div className="overflow-x-auto rounded-md border border-border">
-            <table className="min-w-[720px] w-full table-fixed text-sm">
-              <thead className="bg-secondary/80 text-xs font-black text-muted-foreground">
-                <tr>
-                  <th className="w-14 px-3 py-2 text-center">순위</th>
-                  <th className="px-3 py-2 text-left">회원</th>
-                  <th className="w-20 px-3 py-2 text-right">승률</th>
-                  <th className="w-20 px-3 py-2 text-right">출전</th>
-                  <th className="w-28 px-3 py-2 text-right">승/패/무</th>
-                  <th className="w-24 px-3 py-2 text-right">팀 평균 득점</th>
-                  <th className="w-24 px-3 py-2 text-right">팀 평균 실점</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rankedStats.map((stat, index) => (
-                  <tr
-                    key={stat.memberId}
-                    className={`cursor-pointer border-t border-border transition-colors hover:bg-secondary/50 ${
-                      selectedMemberId === stat.memberId ? "bg-accent/10" : "bg-background"
-                    }`}
-                    onClick={() => onSelectMember(stat.memberId)}
-                  >
-                    <td className="px-3 py-3 text-center font-black text-muted-foreground">{index + 1}</td>
-                    <td className="px-3 py-3 font-black text-foreground">{stat.memberName}</td>
-                    <td className="px-3 py-3 text-right font-black text-accent">{stat.winRate}%</td>
-                    <td className="px-3 py-3 text-right font-semibold">{stat.playedCount}</td>
-                    <td className="px-3 py-3 text-right font-semibold">
-                      {stat.winCount}/{stat.lossCount}/{stat.drawCount}
-                    </td>
-                    <td className="px-3 py-3 text-right font-semibold">{stat.averagePointsFor}</td>
-                    <td className="px-3 py-3 text-right font-semibold">{stat.averagePointsAgainst}</td>
+          <>
+            <div className="grid gap-2 md:hidden">
+              {rankedStats.map((stat, index) => (
+                <button
+                  key={stat.memberId}
+                  className={`rounded-md border p-3 text-left transition-colors ${
+                    selectedMemberId === stat.memberId
+                      ? "border-accent bg-accent/10"
+                      : "border-border bg-background hover:bg-secondary/40"
+                  }`}
+                  type="button"
+                  onClick={() => onSelectMember(stat.memberId)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border text-xs font-black ${rankingBadgeTone(index)}`}>
+                        {index + 1}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-base font-black text-foreground">{stat.memberName}</span>
+                        <span className="mt-0.5 block text-xs font-semibold text-muted-foreground">
+                          {stat.playedCount}전 {stat.winCount}승 {stat.lossCount}패 {stat.drawCount}무
+                        </span>
+                      </span>
+                    </div>
+                    <span className="shrink-0 text-right">
+                      <span className="block text-2xl font-black leading-none text-accent">{stat.winRate}%</span>
+                      <span className="mt-1 block text-[11px] font-black text-muted-foreground">승률</span>
+                    </span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-3 gap-1.5">
+                    <RankingMetric label="출전" value={stat.playedCount} />
+                    <RankingMetric label="평균 득점" value={stat.averagePointsFor} />
+                    <RankingMetric label="평균 실점" value={stat.averagePointsAgainst} />
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto rounded-md border border-border md:block">
+              <table className="min-w-[720px] w-full table-fixed text-sm">
+                <thead className="bg-secondary/80 text-xs font-black text-muted-foreground">
+                  <tr>
+                    <th className="w-14 px-3 py-2 text-center">순위</th>
+                    <th className="px-3 py-2 text-left">회원</th>
+                    <th className="w-20 px-3 py-2 text-right">승률</th>
+                    <th className="w-20 px-3 py-2 text-right">출전</th>
+                    <th className="w-28 px-3 py-2 text-right">승/패/무</th>
+                    <th className="w-24 px-3 py-2 text-right">팀 평균 득점</th>
+                    <th className="w-24 px-3 py-2 text-right">팀 평균 실점</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {rankedStats.map((stat, index) => (
+                    <tr
+                      key={stat.memberId}
+                      className={`cursor-pointer border-t border-border transition-colors hover:bg-secondary/50 ${
+                        selectedMemberId === stat.memberId ? "bg-accent/10" : "bg-background"
+                      }`}
+                      onClick={() => onSelectMember(stat.memberId)}
+                    >
+                      <td className="px-3 py-3 text-center font-black text-muted-foreground">{index + 1}</td>
+                      <td className="px-3 py-3 font-black text-foreground">{stat.memberName}</td>
+                      <td className="px-3 py-3 text-right font-black text-accent">{stat.winRate}%</td>
+                      <td className="px-3 py-3 text-right font-semibold">{stat.playedCount}</td>
+                      <td className="px-3 py-3 text-right font-semibold">
+                        {stat.winCount}/{stat.lossCount}/{stat.drawCount}
+                      </td>
+                      <td className="px-3 py-3 text-right font-semibold">{stat.averagePointsFor}</td>
+                      <td className="px-3 py-3 text-right font-semibold">{stat.averagePointsAgainst}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
           <EmptyState title="조건에 맞는 통계가 없습니다." />
         )}
       </CardContent>
     </Card>
   )
+}
+
+function RankingMetric({ label, value }: { label: string; value: string | number }) {
+  return (
+    <span className="rounded-md border border-border bg-secondary/35 px-2 py-2 text-center">
+      <span className="block text-[11px] font-black text-muted-foreground">{label}</span>
+      <span className="mt-1 block text-base font-black text-foreground">{value}</span>
+    </span>
+  )
+}
+
+function rankingBadgeTone(index: number) {
+  if (index === 0) {
+    return "border-amber-500/50 bg-amber-400 text-slate-950"
+  }
+
+  if (index === 1) {
+    return "border-slate-400/60 bg-slate-200 text-slate-800"
+  }
+
+  if (index === 2) {
+    return "border-orange-500/45 bg-orange-500/15 text-orange-700"
+  }
+
+  return "border-border bg-secondary text-muted-foreground"
 }
 
 function MemberDetailCard({
