@@ -2036,7 +2036,7 @@ function ToastViewport({ toast }: { toast: ToastMessage | null }) {
 
   return (
     <div className="fixed bottom-24 left-1/2 z-[110] w-[calc(100vw-32px)] max-w-sm -translate-x-1/2 sm:bottom-5 sm:left-auto sm:right-5 sm:w-auto sm:translate-x-0">
-      <div className="flex items-center gap-2 rounded-md border border-emerald-500/35 bg-card px-3 py-2 text-sm font-black text-foreground shadow-xl shadow-slate-900/15">
+      <div className="toast-pop flex items-center gap-2 rounded-md border border-emerald-500/35 bg-card px-3 py-2 text-sm font-black text-foreground shadow-xl shadow-slate-900/15">
         <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
         <span className="min-w-0 truncate">{toast.message}</span>
       </div>
@@ -2062,7 +2062,7 @@ function MobileBottomNav({ view, onNavigate }: { view: View; onNavigate: (view: 
           return (
             <button
               key={itemView}
-              className={`flex h-14 flex-col items-center justify-center gap-1 rounded-md text-[11px] font-black transition-colors ${
+              className={`touch-press flex h-14 flex-col items-center justify-center gap-1 rounded-md text-[11px] font-black transition-colors ${
                 active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               }`}
               type="button"

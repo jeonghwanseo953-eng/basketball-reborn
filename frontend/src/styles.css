@@ -80,6 +80,10 @@
   animation: team-move-flash 2100ms ease-out both;
 }
 
+.toast-pop {
+  animation: toast-pop 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .global-loading-bar {
   position: fixed;
   left: 0;
@@ -98,6 +102,47 @@
   width: 42%;
   background: linear-gradient(90deg, hsl(var(--accent) / 0), hsl(var(--accent)), hsl(var(--primary)));
   animation: global-loading-bar 1100ms ease-in-out infinite;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .touch-press {
+    transition:
+      transform 90ms ease-out,
+      background-color 140ms ease-out,
+      border-color 140ms ease-out,
+      color 140ms ease-out,
+      box-shadow 140ms ease-out;
+  }
+
+  .touch-press:active:not(:disabled) {
+    transform: scale(0.975);
+  }
+
+  button:active:not(:disabled),
+  [role="button"]:active {
+    transform: scale(0.985);
+  }
+
+  .soft-card-enter {
+    animation: soft-card-enter 180ms ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
+  .modal-panel,
+  .team-move-flash,
+  .global-loading-bar::before,
+  .toast-pop,
+  .soft-card-enter {
+    animation: none !important;
+  }
+
+  .touch-press,
+  button,
+  [role="button"] {
+    transition: none !important;
+  }
 }
 
 @keyframes modal-overlay-in {
@@ -133,6 +178,30 @@
 
   100% {
     transform: translateX(240%);
+  }
+}
+
+@keyframes toast-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes soft-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
