@@ -205,11 +205,8 @@ export function NoticesView({
                 onChange={(event) => onChange({ ...form, pinned: event.target.checked })}
               />
             </label>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <Button type="button" variant="outline" onClick={closeForm}>
-                취소
-              </Button>
-              <Button disabled={saving || !form.title.trim() || !noticeAuthorName || !form.content.trim()}>
+            <div className="flex justify-end">
+              <Button className="w-full sm:w-auto sm:min-w-32" disabled={saving || !form.title.trim() || !noticeAuthorName || !form.content.trim()}>
                 {editing ? <Pencil className="h-4 w-4" /> : <MessageSquareText className="h-4 w-4" />}
                 {saving ? "저장 중" : editing ? "게시글 수정" : "게시글 등록"}
               </Button>
