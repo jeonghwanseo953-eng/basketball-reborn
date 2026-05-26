@@ -1893,9 +1893,6 @@ function EntranceScreen({ onGuest, onKakao }: { onGuest: () => void; onKakao: ()
               </span>
             </div>
             <h1 className="text-3xl font-black leading-tight sm:text-4xl">동호회 운영 화면</h1>
-            <p className="mt-3 max-w-xl text-sm font-semibold leading-6 text-muted-foreground">
-              카카오 로그인으로 들어가면 등록, 수정, 삭제를 사용할 수 있고 비회원은 모든 메뉴를 조회 전용으로 볼 수 있습니다.
-            </p>
           </div>
 
           <div className="rounded-lg border border-border bg-secondary/40 p-4 shadow-sm shadow-slate-900/5">
@@ -1911,7 +1908,7 @@ function EntranceScreen({ onGuest, onKakao }: { onGuest: () => void; onKakao: ()
                   </span>
                   카카오로 로그인
                 </span>
-                <span className="mt-1 block text-sm font-semibold text-slate-700">운영 기능까지 모두 사용</span>
+                <span className="mt-1 block text-sm font-semibold text-slate-700">운영 기능 사용</span>
               </button>
               <button
                 className="rounded-md border border-border bg-card px-5 py-4 text-left transition-colors hover:bg-background"
