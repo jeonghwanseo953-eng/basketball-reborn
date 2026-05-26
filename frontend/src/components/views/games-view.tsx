@@ -246,14 +246,12 @@ export function GamesView({
             </CardTitle>
             {readOnly ? (
               <Badge className="border-amber-500/35 bg-amber-500/10 text-amber-700">조회 전용</Badge>
-            ) : !canManageGameDays ? (
-              <Badge className="border-slate-500/25 bg-slate-500/10 text-muted-foreground">경기 관리 권한 없음</Badge>
-            ) : (
+            ) : canManageGameDays ? (
               <Button type="button" size="sm" onClick={openCreateForm}>
                 <Plus className="h-4 w-4" />
                 경기 등록
               </Button>
-            )}
+            ) : null}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
