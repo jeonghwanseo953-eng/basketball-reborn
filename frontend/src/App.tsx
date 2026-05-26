@@ -1634,13 +1634,11 @@ function App() {
             aria-label="메인 화면으로 이동"
             onClick={() => navigateToView("dashboard")}
           >
-            <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-900 bg-zinc-950 shadow-sm shadow-slate-900/10 transition-transform group-hover:-translate-y-0.5">
-              <span className="absolute h-9 w-9 rounded-full border-[3px] border-white/90" />
-              <span className="absolute h-9 w-[3px] rounded-full bg-white/75" />
-              <span className="absolute h-[3px] w-9 rounded-full bg-white/75" />
-              <span className="absolute h-11 w-11 rounded-full border-l-[3px] border-r-[3px] border-white/55" />
-              <span className="absolute -right-1 bottom-1 h-3 w-3 rounded-full border border-zinc-950 bg-accent" />
-            </span>
+            <img
+              className="h-12 w-12 shrink-0 rounded-lg shadow-sm shadow-slate-900/10 transition-transform group-hover:-translate-y-0.5"
+              src="/favicon.svg"
+              alt=""
+            />
             <span>
               <span className="block text-2xl font-black leading-none text-foreground sm:text-3xl">
                 RE<span className="text-accent">:</span>BORN
@@ -2186,13 +2184,7 @@ function EntranceScreen({
         <section className="grid w-full gap-5 lg:grid-cols-[1fr_0.9fr] lg:items-stretch">
           <div className="rounded-lg border border-border bg-card p-6 shadow-sm shadow-slate-900/10 sm:p-8">
             <div className="mb-8 flex items-center gap-3">
-              <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-900 bg-zinc-950 shadow-sm shadow-slate-900/10">
-                <span className="absolute h-9 w-9 rounded-full border-[3px] border-white/90" />
-                <span className="absolute h-9 w-[3px] rounded-full bg-white/75" />
-                <span className="absolute h-[3px] w-9 rounded-full bg-white/75" />
-                <span className="absolute h-11 w-11 rounded-full border-l-[3px] border-r-[3px] border-white/55" />
-                <span className="absolute -right-1 bottom-1 h-3 w-3 rounded-full border border-zinc-950 bg-accent" />
-              </span>
+              <img className="h-12 w-12 shrink-0 rounded-lg shadow-sm shadow-slate-900/10" src="/favicon.svg" alt="" />
               <span>
                 <span className="block text-3xl font-black leading-none">
                   RE<span className="text-accent">:</span>BORN
