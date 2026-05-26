@@ -14,6 +14,7 @@ export function NoticesView({
   editingNoticeId,
   loading,
   saving,
+  currentAuthorName,
   initialNoticeId,
   onInitialNoticeOpened,
   onChange,
@@ -28,6 +29,7 @@ export function NoticesView({
   editingNoticeId: number | null
   loading: boolean
   saving: boolean
+  currentAuthorName: string
   initialNoticeId?: number | null
   onInitialNoticeOpened?: () => void
   onChange: (value: NoticeRequest) => void
@@ -47,6 +49,8 @@ export function NoticesView({
   const [commentSaving, setCommentSaving] = useState(false)
   const [query, setQuery] = useState("")
   const [pinFilter, setPinFilter] = useState<"ALL" | "PINNED" | "NORMAL">("ALL")
+  const fixedAuthorName = currentAuthorName.trim()
+  const noticeAuthorName = editing ? form.authorName || fixedAuthorName : fixedAuthorName
   const displayedNotices = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
 
@@ -92,6 +96,7 @@ export function NoticesView({
   function openCreateForm() {
     if (readOnly) return
     onCancelEdit()
+    onChange({ title: "", content: "", authorName: fixedAuthorName, pinned: false })
     setSelectedNotice(null)
     setFormOpen(true)
   }
@@ -117,7 +122,7 @@ export function NoticesView({
   async function openNotice(notice: Notice) {
     setSelectedNotice(notice)
     setComments([])
-    setCommentForm({ authorName: "", content: "" })
+    setCommentForm({ authorName: fixedAuthorName, content: "" })
     setCommentsLoading(true)
 
     try {
@@ -133,18 +138,18 @@ export function NoticesView({
     event.preventDefault()
     if (readOnly) return
 
-    if (!selectedNotice || !commentForm.authorName.trim() || !commentForm.content.trim()) {
+    if (!selectedNotice || !fixedAuthorName || !commentForm.content.trim()) {
       return
     }
 
     setCommentSaving(true)
     try {
       const created = await createNoticeComment(selectedNotice.id, {
-        authorName: commentForm.authorName.trim(),
+        authorName: fixedAuthorName,
         content: commentForm.content.trim(),
       })
       setComments((current) => [...current, created])
-      setCommentForm({ authorName: commentForm.authorName, content: "" })
+      setCommentForm({ authorName: fixedAuthorName, content: "" })
     } finally {
       setCommentSaving(false)
     }
@@ -175,12 +180,7 @@ export function NoticesView({
           <form className="space-y-3" onSubmit={onSubmit}>
             <div className="grid gap-3 sm:grid-cols-[1fr_180px]">
               <TextInput label="제목" value={form.title} onChange={(title) => onChange({ ...form, title })} required />
-              <TextInput
-                label="작성자"
-                value={form.authorName}
-                onChange={(authorName) => onChange({ ...form, authorName })}
-                required
-              />
+              <FixedAuthorInput value={noticeAuthorName} />
             </div>
             <TextArea label="내용" value={form.content} onChange={(content) => onChange({ ...form, content })} />
             <label className="flex items-center justify-between gap-3 rounded-md border border-border bg-secondary/30 p-3 text-sm font-semibold">
@@ -199,7 +199,7 @@ export function NoticesView({
               <Button type="button" variant="outline" onClick={closeForm}>
                 취소
               </Button>
-              <Button disabled={saving || !form.title.trim() || !form.authorName.trim() || !form.content.trim()}>
+              <Button disabled={saving || !form.title.trim() || !noticeAuthorName || !form.content.trim()}>
                 {editing ? <Pencil className="h-4 w-4" /> : <MessageSquareText className="h-4 w-4" />}
                 {saving ? "저장 중" : editing ? "게시글 수정" : "게시글 등록"}
               </Button>
@@ -215,6 +215,7 @@ export function NoticesView({
           commentForm={commentForm}
           commentsLoading={commentsLoading}
           commentSaving={commentSaving}
+          currentAuthorName={fixedAuthorName}
           onBack={() => setSelectedNotice(null)}
           onCommentChange={setCommentForm}
           onCommentDelete={(comment) => void removeComment(comment)}
@@ -323,12 +324,26 @@ function NoticeListRow({
   )
 }
 
+function FixedAuthorInput({ value }: { value: string }) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-semibold text-muted-foreground">작성자</span>
+      <input
+        className="h-10 w-full rounded-md border border-input bg-secondary/70 px-3 text-sm font-semibold text-muted-foreground outline-none"
+        value={value}
+        readOnly
+      />
+    </label>
+  )
+}
+
 function NoticeDetailView({
   notice,
   comments,
   commentForm,
   commentsLoading,
   commentSaving,
+  currentAuthorName,
   onBack,
   onCommentChange,
   onCommentDelete,
@@ -342,6 +357,7 @@ function NoticeDetailView({
   commentForm: NoticeCommentRequest
   commentsLoading: boolean
   commentSaving: boolean
+  currentAuthorName: string
   onBack: () => void
   onCommentChange: (form: NoticeCommentRequest) => void
   onCommentDelete: (comment: NoticeComment) => void
@@ -433,10 +449,10 @@ function NoticeDetailView({
                 <form className="grid gap-2 border-t border-border pt-3" onSubmit={onCommentSubmit}>
                   <div className="grid gap-2 sm:grid-cols-[150px_1fr]">
                     <input
-                      className="h-10 rounded-md border border-input bg-secondary px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-                      placeholder="작성자"
-                      value={commentForm.authorName}
-                      onChange={(event) => onCommentChange({ ...commentForm, authorName: event.target.value })}
+                      className="h-10 rounded-md border border-input bg-secondary/70 px-3 text-sm font-semibold text-muted-foreground outline-none"
+                      value={currentAuthorName}
+                      readOnly
+                      aria-label="작성자"
                     />
                     <input
                       className="h-10 rounded-md border border-input bg-secondary px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
@@ -445,7 +461,7 @@ function NoticeDetailView({
                       onChange={(event) => onCommentChange({ ...commentForm, content: event.target.value })}
                     />
                   </div>
-                  <Button disabled={commentSaving || !commentForm.authorName.trim() || !commentForm.content.trim()}>
+                  <Button disabled={commentSaving || !currentAuthorName || !commentForm.content.trim()}>
                     {commentSaving ? "등록 중" : "댓글 등록"}
                   </Button>
                 </form>

@@ -196,6 +196,7 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const readOnly = authSession?.mode === "guest"
   const currentMemberRole = authSession?.memberRole ?? "NONE"
+  const currentAuthorName = authSession?.memberName ?? authSession?.name ?? ""
   const canManageEverything = currentMemberRole === "WEB_ADMIN" || currentMemberRole === "PRESIDENT"
   const busyMessage = getBusyMessage({
     loading,
@@ -1163,16 +1164,25 @@ function App() {
   async function submitNotice(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!requireWriteAccess()) return
+    const authorName = currentAuthorName.trim()
+    if (!authorName) {
+      setError("로그인 사용자 정보를 확인하지 못했습니다.")
+      return
+    }
     setSavingNotice(true)
     setError(null)
 
     try {
+      const payload = {
+        ...noticeForm,
+        authorName: editingNoticeId ? noticeForm.authorName || authorName : authorName,
+      }
       if (editingNoticeId) {
-        const updated = await updateNotice(editingNoticeId, noticeForm)
+        const updated = await updateNotice(editingNoticeId, payload)
         setNotices((current) => current.map((notice) => (notice.id === updated.id ? updated : notice)))
         setEditingNoticeId(null)
       } else {
-        const created = await createNotice(noticeForm)
+        const created = await createNotice(payload)
         setNotices((current) => [created, ...current])
       }
       setNoticeForm(emptyNoticeForm)
@@ -1872,6 +1882,7 @@ function App() {
             editingNoticeId={editingNoticeId}
             loading={loading}
             saving={savingNotice}
+            currentAuthorName={currentAuthorName}
             initialNoticeId={dashboardNoticeId}
             onInitialNoticeOpened={() => setDashboardNoticeId(null)}
             onChange={setNoticeForm}
