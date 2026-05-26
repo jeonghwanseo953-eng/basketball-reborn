@@ -326,10 +326,19 @@ function App() {
     window.history.pushState(makeHistoryState(nextView, nextGameOperationModal, nextSelectedGameDayId), "", window.location.pathname)
   }
 
-  function navigateToView(nextView: View) {
+  function scrollToPageTop() {
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" })
+    })
+  }
+
+  function navigateToView(nextView: View, options: { scrollTop?: boolean } = {}) {
     setGameOperationModal(null)
     setView(nextView)
     pushAppHistory(nextView, null)
+    if (options.scrollTop) {
+      scrollToPageTop()
+    }
   }
 
   function reloadDashboard() {
@@ -1949,7 +1958,7 @@ function App() {
           />
         ) : null}
       </div>
-      <MobileBottomNav view={view} onNavigate={navigateToView} />
+      <MobileBottomNav view={view} onNavigate={(nextView) => navigateToView(nextView, { scrollTop: true })} />
     </main>
   )
 }
