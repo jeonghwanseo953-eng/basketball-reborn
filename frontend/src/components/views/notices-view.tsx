@@ -93,6 +93,16 @@ export function NoticesView({
     onInitialNoticeOpened?.()
   }, [initialNoticeId, notices, onInitialNoticeOpened, selectedNotice?.id])
 
+  useEffect(() => {
+    if (!selectedNotice) {
+      return
+    }
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+    })
+  }, [selectedNotice])
+
   function openCreateForm() {
     if (readOnly) return
     onCancelEdit()
