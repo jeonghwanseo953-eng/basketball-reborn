@@ -34,6 +34,7 @@ export const memberRoleLabels: Record<MemberRole, string> = {
   NONE: "없음",
   PRESIDENT: "회장",
   TREASURER: "총무",
+  WEB_ADMIN: "웹관리자",
 }
 
 export const paymentStatusLabels: Record<PaymentStatus, string> = {

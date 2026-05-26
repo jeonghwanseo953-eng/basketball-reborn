@@ -6,6 +6,7 @@ import {
   CalendarPlus,
   Crown,
   Landmark,
+  MonitorCog,
   Pencil,
   Ruler,
   Search,
@@ -770,6 +771,7 @@ function RoleSelect({
 }) {
   const president = getRoleHolder(roleHolders, "PRESIDENT", currentMemberId)
   const treasurer = getRoleHolder(roleHolders, "TREASURER", currentMemberId)
+  const webAdmin = getRoleHolder(roleHolders, "WEB_ADMIN", currentMemberId)
 
   return (
     <label className="block">
@@ -786,12 +788,16 @@ function RoleSelect({
         <option value="TREASURER" disabled={Boolean(treasurer)}>
           {treasurer ? `총무 (${treasurer.name})` : memberRoleLabels.TREASURER}
         </option>
+        <option value="WEB_ADMIN" disabled={Boolean(webAdmin)}>
+          {webAdmin ? `웹관리자 (${webAdmin.name})` : memberRoleLabels.WEB_ADMIN}
+        </option>
       </select>
-      {president || treasurer ? (
+      {president || treasurer || webAdmin ? (
         <p className="mt-1 text-xs font-medium text-muted-foreground">
           {[
             president ? `회장: ${president.name}` : null,
             treasurer ? `총무: ${treasurer.name}` : null,
+            webAdmin ? `웹관리자: ${webAdmin.name}` : null,
           ].filter(Boolean).join(" · ")}
         </p>
       ) : null}
@@ -956,14 +962,24 @@ function renderRole(member: Member) {
     return null
   }
 
-  const RoleIcon = member.role === "PRESIDENT" ? Crown : Landmark
-  const tone =
-    member.role === "PRESIDENT"
-      ? "border-amber-500/50 bg-amber-500/10 text-amber-700"
-      : "border-emerald-600/40 bg-emerald-600/10 text-emerald-700"
+  const roleMeta = {
+    PRESIDENT: {
+      icon: Crown,
+      tone: "border-amber-500/50 bg-amber-500/10 text-amber-700",
+    },
+    TREASURER: {
+      icon: Landmark,
+      tone: "border-emerald-600/40 bg-emerald-600/10 text-emerald-700",
+    },
+    WEB_ADMIN: {
+      icon: MonitorCog,
+      tone: "border-indigo-400/60 bg-indigo-50 text-indigo-800",
+    },
+  }[member.role]
+  const RoleIcon = roleMeta.icon
 
   return (
-    <Badge className={`gap-1 ${tone}`}>
+    <Badge className={`gap-1 ${roleMeta.tone}`}>
       <RoleIcon className="h-3.5 w-3.5" />
       {memberRoleLabels[member.role]}
     </Badge>
@@ -1026,7 +1042,8 @@ function getMemberSortValue(member: Member, sortKey: MemberSortKey) {
     const roleRank: Record<MemberRole, number> = {
       PRESIDENT: 0,
       TREASURER: 1,
-      NONE: 2,
+      WEB_ADMIN: 2,
+      NONE: 3,
     }
 
     return roleRank[member.role ?? "NONE"]

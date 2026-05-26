@@ -127,6 +127,7 @@ public class MemberService {
 		return switch (role) {
 			case PRESIDENT -> "회장";
 			case TREASURER -> "총무";
+			case WEB_ADMIN -> "웹관리자";
 			case NONE -> "직책";
 		};
 	}

@@ -5,7 +5,7 @@ export type GameDayStatus = "SCHEDULED" | "COMPLETED" | "HOLIDAY" | "CLOSED"
 export type AttendanceStatus = "ATTENDING" | "ABSENT" | "UNDECIDED"
 export type ResultOutcome = "TEAM1_WIN" | "TEAM2_WIN" | "DRAW"
 export type MemberStatus = "REGULAR" | "GUEST" | "RESTING" | "WITHDRAWN"
-export type MemberRole = "NONE" | "PRESIDENT" | "TREASURER"
+export type MemberRole = "NONE" | "PRESIDENT" | "TREASURER" | "WEB_ADMIN"
 export type PaymentStatus = "PAID" | "UNPAID"
 export type StatisticsScope = "RECENT" | "ALL" | "MONTH"
 
