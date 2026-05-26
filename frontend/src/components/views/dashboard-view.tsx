@@ -20,6 +20,7 @@ export function DashboardView({
   onOpenMembers,
   onOpenNotices,
   onOpenResults,
+  onOpenResultTeams,
   onOpenStats,
   onOpenTeams,
   onOpenNotice,
@@ -38,6 +39,7 @@ export function DashboardView({
   onOpenMembers: () => void
   onOpenNotices: () => void
   onOpenResults: () => void
+  onOpenResultTeams: () => void
   onOpenStats: () => void
   onOpenTeams: () => void
   onOpenNotice: (notice: Notice) => void
@@ -242,10 +244,23 @@ export function DashboardView({
                 ) : (
                   <span />
                 )}
-                <Button className="h-8 px-2.5 text-xs sm:h-9 sm:px-3 sm:text-sm" type="button" variant="outline" size="sm" onClick={onOpenResults}>
-                  결과
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    className="h-8 px-2.5 text-xs sm:h-9 sm:px-3 sm:text-sm"
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={onOpenResultTeams}
+                    disabled={!finalResults.length}
+                  >
+                    팀
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  <Button className="h-8 px-2.5 text-xs sm:h-9 sm:px-3 sm:text-sm" type="button" variant="outline" size="sm" onClick={onOpenResults}>
+                    결과
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </CardHeader>

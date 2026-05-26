@@ -776,6 +776,13 @@ function App() {
     pushAppHistory("games", "results", gameDayId || selectedGameDayId)
   }
 
+  async function openDashboardResultTeams() {
+    const gameDayId = dashboard?.recentResults[0]?.gameDayId
+    if (gameDayId) {
+      await openGameOperation(gameDayId, "teams")
+    }
+  }
+
   function openDashboardNotices() {
     setDashboardNoticeId(null)
     navigateToView("notices")
@@ -1661,6 +1668,7 @@ function App() {
             )}
             onOpenMembers={() => navigateToView("members")}
             onOpenResults={() => void openDashboardResults()}
+            onOpenResultTeams={() => void openDashboardResultTeams()}
             onOpenNotices={openDashboardNotices}
             onOpenNotice={openDashboardNotice}
             onOpenStats={() => navigateToView("stats")}
